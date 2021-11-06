@@ -281,9 +281,8 @@ app.layout = html.Div(
                     id='main-class',
                     options=[
                         {'label': MainClass, 'value': MainClass}
-                        for MainClass in warrior.mainClass.unique()
+                        for MainClass in warrior.mainClass.sort_values().unique()
                     ],  # 'warrior' is the filter
-                    value='(All)',
                     clearable=True,
                     searchable=False,
                     className='dropdown', style={'fontSize': "14px", 'textAlign': 'center'},
@@ -307,10 +306,9 @@ app.layout = html.Div(
     [Input("main-class", "value")]
 )
 def update_tables(option_selected):
-    # (all) option does not work at the moment
-    if option_selected == '':
+    if option_selected is None:
         filtered_df = warrior
-    elif option_selected != '':
+    else:
         filtered_df = warrior[warrior['mainClass'] == option_selected]
     return [filtered_df.to_dict('records')]
 
@@ -320,11 +318,18 @@ def update_tables(option_selected):
     [Input("main-class", "value")]
 )
 def update_charts(option_selected):
-    filtered_dataC = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'common')]
-    filtered_dataU = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'uncommon')]
-    filtered_dataR = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'rare')]
-    filtered_dataL = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'legendary')]
-    filtered_dataM = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'mythic')]
+    if option_selected is None:
+        filtered_dataC = warrior[(warrior['rarity'] == 'common')]
+        filtered_dataU = warrior[(warrior['rarity'] == 'uncommon')]
+        filtered_dataR = warrior[(warrior['rarity'] == 'rare')]
+        filtered_dataL = warrior[(warrior['rarity'] == 'legendary')]
+        filtered_dataM = warrior[(warrior['rarity'] == 'mythic')]
+    else:
+        filtered_dataC = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'common')]
+        filtered_dataU = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'uncommon')]
+        filtered_dataR = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'rare')]
+        filtered_dataL = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'legendary')]
+        filtered_dataM = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'mythic')]
 
     trace1 = go.Scatter(x=filtered_dataC.timeStamp, y=filtered_dataC.soldPrice, mode='markers', name='Common',
                         hovertemplate=
@@ -391,7 +396,7 @@ def update_charts(option_selected):
                         marker=dict(color='rgba(255, 164, 62, 1)', size=7)
                         )
 
-    trace5 = go.Scatter(x=filtered_dataM.timeStamp, y=filtered_dataM.soldPrice, mode='markers', name='Mythic',
+    trace5 = go.Scatter(x=filtered_dataM.timeStamp, y=warriorM.soldPrice, mode='markers', name='Mythic',
                         hovertemplate=
                         '<b>ID</b>: %{text}<br>' +
                         '<b>Price</b>: %{y} Jewels' +
@@ -408,7 +413,6 @@ def update_charts(option_selected):
                         )
 
     data = [trace1, trace2, trace3, trace4, trace5]
-
     newfig = go.Figure(data=data)
     newfig.update_traces(marker=dict(line=dict(width=.5)))
     newfig.update_layout(title='Tavern Sales - Last 1000 Heroes Sold',
