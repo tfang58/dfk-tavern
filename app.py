@@ -136,10 +136,12 @@ df2['timeStamp'] = utcTime
 # gen4 = df2[(df2['generation']==4)]
 # genbeyond = df2[(df2['generation']>4)]
 
-#warrior = df2[(df2['mainClass']=='Warrior') & (df2["generation"]=='1')]
-knight = df2[(df2['mainClass']=='Knight') & (df2["generation"]=='1')]
+warrior = df2[(df2['mainClass']=='Warrior') & (df2["generation"]=='1')]
+#knight = df2[(df2['mainClass']=='Knight') & (df2["generation"]=='1')]
 
 #fishing = df2[(df2['profession']=='fishing') & (df2["generation"]=='1')]
+
+warrior = df2[(df2['mainClass']=='Warrior')]
 
 warriorC = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='common')]
 warriorU = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='uncommon')]
