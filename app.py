@@ -5,6 +5,7 @@ import json
 import pandas as pd
 
 import dash
+from dash import dash_table
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
@@ -246,23 +247,24 @@ fig.update_yaxes(showspikes=True)
 
 # Initialize
 # Setup the style from the link:
-#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-# Embed the style to the dashboard:
-app = dash.Dash(__name__)
-server = app.server
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+# Embed the style to the dashabord:
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(
- children=[
-  html.H1(children="DeFi Kingdom Tavern Dashboards", ),
-  html.P(
-   children="Random playground for various tavern dashboards."),
+    children=[
+        html.H1(children="DeFi Kingdom Tavern Dashboards", ),
+        html.P(
+            children="Random playground for various tavern dashboards."),
 
-  dcc.Graph(figure=fig)
+        dcc.Graph(figure=fig),
 
- ]
+        dash_table.DataTable(id='table',
+                             columns=[{"name": i, "id": i} for i in warrior.columns],
+                             data=warrior.to_dict('records'))
+
+    ]
 )
 
-# plot_bgcolor='white')
-
 if __name__ == "__main__":
- app.run_server()
+    app.run_server()
