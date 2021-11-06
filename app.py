@@ -1,26 +1,19 @@
-import time
 import datetime
-import requests
+import datetime
 import json
-import pandas as pd
 
+import cufflinks as cf
 import dash
+import pandas as pd
+import plotly.graph_objects as go
+import requests
 from dash import dcc
 from dash import html
-from dash.dependencies import Input, Output
 
-import chart_studio.plotly as py
-import plotly.express as px
-import plotly.graph_objects as go
-import cufflinks as cf
-
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import matplotlib as mpl
-import seaborn as sns
 %matplotlib inline
 
-from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+from plotly.offline import init_notebook_mode
+
 init_notebook_mode(connected=True)
 cf.go_offline
 
@@ -244,9 +237,10 @@ fig.update_yaxes(showspikes=True)
 
 # Initialize
 # Setup the style from the link:
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-# Embed the style to the dashabord:
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+# Embed the style to the dashboard:
+app = dash.Dash(__name__)
+server = app.server
 
 app.layout = html.Div(
  children=[
@@ -260,7 +254,6 @@ app.layout = html.Div(
 )
 
 # plot_bgcolor='white')
-
 
 if __name__ == "__main__":
  app.run_server()
