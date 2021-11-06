@@ -73,6 +73,9 @@ else:
 
 json_data = json.loads(r.text)
 
+#getting timestamp for "last updated"
+currentTime = datetime.datetime.utcnow()
+
 df_data = json_data['data']['saleAuctions']
 df = pd.DataFrame(df_data)
 
@@ -257,8 +260,11 @@ server = app.server
 app.layout = html.Div(
     children=[
         html.H1(children="DeFi Kingdom Tavern Dashboards", ),
-        html.P(
+        html.Div(
             children="Random playground for various tavern dashboards."),
+
+        html.Div(
+            children="Data last updated: {}.".format(currentTime)),
 
         dcc.Graph(figure=fig),
 
