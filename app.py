@@ -1,19 +1,28 @@
+import time
 import datetime
-import datetime
-import json
-
-import cufflinks as cf
-import dash
-import pandas as pd
-import plotly.graph_objects as go
 import requests
+import json
+import pandas as pd
+
+import dash
 from dash import dcc
 from dash import html
+from dash.dependencies import Input, Output
 
-%matplotlib inline
+import chart_studio.plotly as py
+import plotly.express as px
+import plotly.graph_objects as go
+import cufflinks as cf
 
-from plotly.offline import init_notebook_mode
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import matplotlib as mpl
+import seaborn as sns
 
+#not needed for pycharm
+#%matplotlib inline
+
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 init_notebook_mode(connected=True)
 cf.go_offline
 
