@@ -139,18 +139,26 @@ df2['timeStamp'] = utcTime
 # gen4 = df2[(df2['generation']==4)]
 # genbeyond = df2[(df2['generation']>4)]
 
-warrior = df2[(df2['mainClass']=='Warrior') & (df2["generation"]=='1')]
+#warrior = df2[(df2['mainClass']=='Warrior') & (df2["generation"]=='1')]
 #knight = df2[(df2['mainClass']=='Knight') & (df2["generation"]=='1')]
 
 #fishing = df2[(df2['profession']=='fishing') & (df2["generation"]=='1')]
 
+# warrior = df2[(df2['mainClass']=='Warrior')]
+#
+# warriorC = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='common')]
+# warriorU = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='uncommon')]
+# warriorR = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='rare')]
+# warriorL = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='legendary')]
+# warriorM = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='mythic')]
+
 warrior = df2[(df2['mainClass']=='Warrior')]
 
-warriorC = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='common')]
-warriorU = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='uncommon')]
-warriorR = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='rare')]
-warriorL = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='legendary')]
-warriorM = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='mythic')]
+warriorC = df2[df2["rarity"]=='common']
+warriorU = df2[df2["rarity"]=='uncommon']
+warriorR = df2[df2["rarity"]=='rare']
+warriorL = df2[df2["rarity"]=='legendary']
+warriorM = df2[df2["rarity"]=='mythic']
 
 fig = go.Figure()
 
@@ -239,7 +247,7 @@ fig.add_trace(go.Scatter(x=warriorM.timeStamp, y=warriorM.soldPrice, mode='marke
                          ))
 
 fig.update_traces(marker=dict(line=dict(width=.5)))
-fig.update_layout(title='Latest Warriors Sold Based on Last 1000 Tavern Sales',
+fig.update_layout(title='Tavern Sales - Last 1000 Heroes Sold',
                   titlefont=dict(family='Arial', size=24),
                   xaxis=dict(showgrid=True, ticks='outside'),
                   xaxis_title='Date in UTC',
