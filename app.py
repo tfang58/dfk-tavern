@@ -108,13 +108,14 @@ for x in df['purchasePrice']:
 df2['soldPrice'] = soldPrice
 df2 = df2.drop(['purchasePrice'], axis=1)
 
+#change 'generation' to string for hover tooltip on main graph
 genstr = []
 
 for x in df2['generation']:
- x = str(x)
- genstr.append(x)
+    x = str(x)
+    genstr.append(x)
 
-df2['generation'] = genstr
+df2['generationStr'] = genstr
 
 utcTime = []
 
@@ -125,41 +126,24 @@ for x in df['endedAt']:
  # print(utcTime)
 
 df2['timeStamp'] = utcTime
-# df2 = df2.drop(['endedAt'], axis=1)
+df2 = df2.drop(['endedAt'], axis=1)
 
 ###FILTER####
 
-#df2[(df2['generation']==1) & (df2['rarity']=='uncommon')]
-#df[(df["a"] > 2) & (df["b"] > 5)]
-
-# gen0 = df2[(df2['generation']==0)]
-# gen1 = df2[(df2['generation']==1)]
-# gen2 = df2[(df2['generation']==2)]
-# gen3 = df2[(df2['generation']==3)]
-# gen4 = df2[(df2['generation']==4)]
-# genbeyond = df2[(df2['generation']>4)]
-
-#warrior = df2[(df2['mainClass']=='Warrior') & (df2["generation"]=='1')]
-#knight = df2[(df2['mainClass']=='Knight') & (df2["generation"]=='1')]
-
-#fishing = df2[(df2['profession']=='fishing') & (df2["generation"]=='1')]
-
-# warrior = df2[(df2['mainClass']=='Warrior')]
-#
-# warriorC = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='common')]
-# warriorU = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='uncommon')]
-# warriorR = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='rare')]
-# warriorL = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='legendary')]
-# warriorM = df2[(df2['mainClass']=='Warrior') & (df2["rarity"]=='mythic')]
-
+#base data
 warrior = df2
 
-warriorC = df2[(df2["rarity"] == 'common')]
-warriorU = df2[(df2["rarity"] == 'uncommon')]
-warriorR = df2[(df2["rarity"] == 'rare')]
-warriorL = df2[(df2["rarity"] == 'legendary')]
-warriorM = df2[(df2["rarity"] == 'mythic')]
+warriorC = df2[(df2["rarity"]=='common')]
+warriorU = df2[(df2["rarity"]=='uncommon')]
+warriorR = df2[(df2["rarity"]=='rare')]
+warriorL = df2[(df2["rarity"]=='legendary')]
+warriorM = df2[(df2["rarity"]=='mythic')]
 
+#table data - drop 'generationStr' for readability
+knight = df2
+knight = knight.drop(['generationStr'], axis=1)
+
+###MAIN GRAPH####
 fig = go.Figure()
 
 # px.scatter(warriorC, x="timeStamp", y="soldPrice",
@@ -172,7 +156,7 @@ fig.add_trace(go.Scatter(x=warriorC.timeStamp, y=warriorC.soldPrice, mode='marke
                          '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                          text=warriorC['id'] + '<br>' +
                               '<b>Rarity</b>: ' + warriorC['rarity'] + '<br>' +
-                              '<b>Generation</b>: ' + warriorC['generation'] + '<br>' + '<br>' +
+                              '<b>Generation</b>: ' + warriorC['generationStr'] + '<br>' + '<br>' +
                               '<b>Main Class</b>: ' + warriorC['mainClass'] + '<br>' +
                               '<b>Sub Class</b>: ' + warriorC['subClass'] + '<br>' +
                               '<b>Primary Boost</b>: ' + warriorC['statBoost1'] + '<br>' +
@@ -189,7 +173,7 @@ fig.add_trace(go.Scatter(x=warriorU.timeStamp, y=warriorU.soldPrice, mode='marke
                          '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                          text=warriorU['id'] + '<br>' +
                               '<b>Rarity</b>: ' + warriorU['rarity'] + '<br>' +
-                              '<b>Generation</b>: ' + warriorU['generation'] + '<br>' + '<br>' +
+                              '<b>Generation</b>: ' + warriorU['generationStr'] + '<br>' + '<br>' +
                               '<b>Main Class</b>: ' + warriorU['mainClass'] + '<br>' +
                               '<b>Sub Class</b>: ' + warriorU['subClass'] + '<br>' +
                               '<b>Primary Boost</b>: ' + warriorU['statBoost1'] + '<br>' +
@@ -205,7 +189,7 @@ fig.add_trace(go.Scatter(x=warriorR.timeStamp, y=warriorR.soldPrice, mode='marke
                          '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                          text=warriorR['id'] + '<br>' +
                               '<b>Rarity</b>: ' + warriorR['rarity'] + '<br>' +
-                              '<b>Generation</b>: ' + warriorR['generation'] + '<br>' + '<br>' +
+                              '<b>Generation</b>: ' + warriorR['generationStr'] + '<br>' + '<br>' +
                               '<b>Main Class</b>: ' + warriorR['mainClass'] + '<br>' +
                               '<b>Sub Class</b>: ' + warriorR['subClass'] + '<br>' +
                               '<b>Primary Boost</b>: ' + warriorR['statBoost1'] + '<br>' +
@@ -221,7 +205,7 @@ fig.add_trace(go.Scatter(x=warriorL.timeStamp, y=warriorL.soldPrice, mode='marke
                          '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                          text=warriorL['id'] + '<br>' +
                               '<b>Rarity</b>: ' + warriorL['rarity'] + '<br>' +
-                              '<b>Generation</b>: ' + warriorL['generation'] + '<br>' + '<br>' +
+                              '<b>Generation</b>: ' + warriorL['generationStr'] + '<br>' + '<br>' +
                               '<b>Main Class</b>: ' + warriorL['mainClass'] + '<br>' +
                               '<b>Sub Class</b>: ' + warriorL['subClass'] + '<br>' +
                               '<b>Primary Boost</b>: ' + warriorL['statBoost1'] + '<br>' +
@@ -237,7 +221,7 @@ fig.add_trace(go.Scatter(x=warriorM.timeStamp, y=warriorM.soldPrice, mode='marke
                          '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                          text=warriorM['id'] + '<br>' +
                               '<b>Rarity</b>: ' + warriorM['rarity'] + '<br>' +
-                              '<b>Generation</b>: ' + warriorM['generation'] + '<br>' + '<br>' +
+                              '<b>Generation</b>: ' + warriorM['generationStr'] + '<br>' + '<br>' +
                               '<b>Main Class</b>: ' + warriorM['mainClass'] + '<br>' +
                               '<b>Sub Class</b>: ' + warriorM['subClass'] + '<br>' +
                               '<b>Primary Boost</b>: ' + warriorM['statBoost1'] + '<br>' +
@@ -265,6 +249,8 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 
+PAGE_SIZE = 25
+
 app.layout = html.Div(
     children=[
         html.H1(children="DeFi Kingdom Tavern Dashboards", ),
@@ -291,45 +277,105 @@ app.layout = html.Div(
             className='menu',
         ),  # the dropdown function
 
+        dcc.RangeSlider(
+            id='gen-slider',  # any name you'd like to give it
+            marks={
+                0: '0',  # key=position, value=what you see
+                1: '1',
+                2: '2',
+                3: '3',
+                4: '4',
+                5: '5',
+                6: '6',
+                7: '7',
+                8: '8',
+                9: '9',
+                10: '10',
+                11: '11',
+            },
+            step=1,  # number of steps between values
+            min=0,
+            max=11,
+            value=[0, 11],  # default value initially chosen
+            dots=True,  # True, False - insert dots, only when step>1
+            allowCross=False,  # True,False - Manage handle crossover
+            disabled=False,  # True,False - disable handle
+            # pushable=1,            # any number, or True with multiple handles
+            # updatemode='drag',  # 'mouseup', 'drag' - update value method
+            # included=True,         # True, False - highlight handle
+            # vertical=False,        # True, False - vertical, horizontal slider
+            # verticalHeight=900,    # hight of slider (pixels) when vertical=True
+            className='None',
+            tooltip={'always visible': False,  # show current slider values
+                     'placement': 'bottom'},
+        ),
+
         dcc.Graph(id='main-chart', figure=fig),
 
         dash_table.DataTable(id='main-table',
-                             columns=[{"name": i, "id": i} for i in warrior.columns],
-                             data=warrior.to_dict('records'))
+                             columns=[{"name": i, "id": i} for i in knight.columns],
+                             data=knight.to_dict('records'),
+                             page_current=0,
+                             page_size=PAGE_SIZE),
 
+        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436"),
+
+        html.Div(children="Tips are appreciated :D"),
     ]
 )
 
 
 @app.callback(
     [Output("main-table", "data")],
-    [Input("main-class", "value")]
+    [Input("main-class", "value"),
+     Input("gen-slider", "value")]
 )
-def update_tables(option_selected):
+def update_tables(option_selected, gen_slider):
     if option_selected is None:
-        filtered_df = warrior
+        filtered_df = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_df = filtered_df.drop(['generationStr'], axis=1)
     else:
-        filtered_df = warrior[warrior['mainClass'] == option_selected]
+        filtered_df = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_df = filtered_df[filtered_df['mainClass'] == option_selected]
+        filtered_df = filtered_df.drop(['generationStr'], axis=1)
     return [filtered_df.to_dict('records')]
 
 
 @app.callback(
     Output("main-chart", "figure"),
-    [Input("main-class", "value")]
+    [Input("main-class", "value"),
+     Input("gen-slider", "value")]
 )
-def update_charts(option_selected):
+def update_charts(option_selected, gen_slider):
     if option_selected is None:
-        filtered_dataC = warrior[(warrior['rarity'] == 'common')]
-        filtered_dataU = warrior[(warrior['rarity'] == 'uncommon')]
-        filtered_dataR = warrior[(warrior['rarity'] == 'rare')]
-        filtered_dataL = warrior[(warrior['rarity'] == 'legendary')]
-        filtered_dataM = warrior[(warrior['rarity'] == 'mythic')]
+        filtered_dataC = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataU = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataR = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataL = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataM = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+
+        filtered_dataC = filtered_dataC[(filtered_dataC['rarity'] == 'common')]
+        filtered_dataU = filtered_dataU[(filtered_dataU['rarity'] == 'uncommon')]
+        filtered_dataR = filtered_dataR[(filtered_dataR['rarity'] == 'rare')]
+        filtered_dataL = filtered_dataL[(filtered_dataL['rarity'] == 'legendary')]
+        filtered_dataM = filtered_dataM[(filtered_dataM['rarity'] == 'mythic')]
     else:
-        filtered_dataC = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'common')]
-        filtered_dataU = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'uncommon')]
-        filtered_dataR = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'rare')]
-        filtered_dataL = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'legendary')]
-        filtered_dataM = warrior[(warrior['mainClass'] == option_selected) & (warrior["rarity"] == 'mythic')]
+        filtered_dataC = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataU = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataR = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataL = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+        filtered_dataM = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
+
+        filtered_dataC = filtered_dataC[
+            (filtered_dataC['mainClass'] == option_selected) & (warrior["rarity"] == 'common')]
+        filtered_dataU = filtered_dataU[
+            (filtered_dataU['mainClass'] == option_selected) & (warrior["rarity"] == 'uncommon')]
+        filtered_dataR = filtered_dataR[
+            (filtered_dataR['mainClass'] == option_selected) & (warrior["rarity"] == 'rare')]
+        filtered_dataL = filtered_dataL[
+            (filtered_dataL['mainClass'] == option_selected) & (warrior["rarity"] == 'legendary')]
+        filtered_dataM = filtered_dataM[
+            (filtered_dataM['mainClass'] == option_selected) & (warrior["rarity"] == 'mythic')]
 
     trace1 = go.Scatter(x=filtered_dataC.timeStamp, y=filtered_dataC.soldPrice, mode='markers', name='Common',
                         hovertemplate=
@@ -338,7 +384,7 @@ def update_charts(option_selected):
                         '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                         text=filtered_dataC['id'] + '<br>' +
                              '<b>Rarity</b>: ' + filtered_dataC['rarity'] + '<br>' +
-                             '<b>Generation</b>: ' + filtered_dataC['generation'] + '<br>' + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataC['generationStr'] + '<br>' + '<br>' +
                              '<b>Main Class</b>: ' + filtered_dataC['mainClass'] + '<br>' +
                              '<b>Sub Class</b>: ' + filtered_dataC['subClass'] + '<br>' +
                              '<b>Primary Boost</b>: ' + filtered_dataC['statBoost1'] + '<br>' +
@@ -355,7 +401,7 @@ def update_charts(option_selected):
                         '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                         text=filtered_dataU['id'] + '<br>' +
                              '<b>Rarity</b>: ' + filtered_dataU['rarity'] + '<br>' +
-                             '<b>Generation</b>: ' + filtered_dataU['generation'] + '<br>' + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataU['generationStr'] + '<br>' + '<br>' +
                              '<b>Main Class</b>: ' + filtered_dataU['mainClass'] + '<br>' +
                              '<b>Sub Class</b>: ' + filtered_dataU['subClass'] + '<br>' +
                              '<b>Primary Boost</b>: ' + filtered_dataU['statBoost1'] + '<br>' +
@@ -371,7 +417,7 @@ def update_charts(option_selected):
                         '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                         text=filtered_dataR['id'] + '<br>' +
                              '<b>Rarity</b>: ' + filtered_dataR['rarity'] + '<br>' +
-                             '<b>Generation</b>: ' + filtered_dataR['generation'] + '<br>' + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataR['generationStr'] + '<br>' + '<br>' +
                              '<b>Main Class</b>: ' + filtered_dataR['mainClass'] + '<br>' +
                              '<b>Sub Class</b>: ' + filtered_dataR['subClass'] + '<br>' +
                              '<b>Primary Boost</b>: ' + filtered_dataR['statBoost1'] + '<br>' +
@@ -387,7 +433,7 @@ def update_charts(option_selected):
                         '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                         text=filtered_dataL['id'] + '<br>' +
                              '<b>Rarity</b>: ' + filtered_dataL['rarity'] + '<br>' +
-                             '<b>Generation</b>: ' + filtered_dataL['generation'] + '<br>' + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataL['generationStr'] + '<br>' + '<br>' +
                              '<b>Main Class</b>: ' + filtered_dataL['mainClass'] + '<br>' +
                              '<b>Sub Class</b>: ' + filtered_dataL['subClass'] + '<br>' +
                              '<b>Primary Boost</b>: ' + filtered_dataL['statBoost1'] + '<br>' +
@@ -403,7 +449,7 @@ def update_charts(option_selected):
                         '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                         text=filtered_dataM['id'] + '<br>' +
                              '<b>Rarity</b>: ' + filtered_dataM['rarity'] + '<br>' +
-                             '<b>Generation</b>: ' + filtered_dataM['generation'] + '<br>' + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataM['generationStr'] + '<br>' + '<br>' +
                              '<b>Main Class</b>: ' + filtered_dataM['mainClass'] + '<br>' +
                              '<b>Sub Class</b>: ' + filtered_dataM['subClass'] + '<br>' +
                              '<b>Primary Boost</b>: ' + filtered_dataM['statBoost1'] + '<br>' +
