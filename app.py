@@ -20,10 +20,11 @@ import matplotlib.dates as mdates
 import matplotlib as mpl
 import seaborn as sns
 
-#not needed for pycharm
-#%matplotlib inline
+# not needed for pycharm
+# %matplotlib inline
 
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+
 init_notebook_mode(connected=True)
 cf.go_offline
 
@@ -66,14 +67,14 @@ query = """query {
 url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
 r = requests.post(url, json={"query": query})
 
-if r.status_code == 200:
-    print(json.dumps(r.json(), indent=2))
-else:
-    raise Exception(f"Query failed to run with a {r.status_code}.")
+# if r.status_code == 200:
+#     print(json.dumps(r.json(), indent=2))
+# else:
+#     raise Exception(f"Query failed to run with a {r.status_code}.")
 
 json_data = json.loads(r.text)
 
-#getting timestamp for "last updated"
+# getting timestamp for "last updated"
 currentTime = datetime.datetime.utcnow()
 
 df_data = json_data['data']['saleAuctions']
@@ -86,29 +87,30 @@ df2 = df['tokenId'].apply(pd.Series)
 df2 = pd.concat([df2, df['purchasePrice']], axis=1)
 df2 = pd.concat([df2, df['endedAt']], axis=1)
 
-cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession', 'summons', 'maxSummons', 'purchasePrice', 'endedAt']
+cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession', 'summons',
+        'maxSummons', 'purchasePrice', 'endedAt']
 
 df2 = df2.reindex(columns=cols)
 
 df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
-#print(df2)
+# print(df2)
 
-#drop empty values from purchasePrice
+# drop empty values from purchasePrice
 df2.dropna(subset=['purchasePrice'])
 
 soldPrice = []
 
 for x in df['purchasePrice']:
     for y in x:
-        priceLen = len(x)-16
+        priceLen = len(x) - 16
     x = x[: priceLen]
-    x = int(float(x))/100
+    x = int(float(x)) / 100
     soldPrice.append(x)
 
 df2['soldPrice'] = soldPrice
 df2 = df2.drop(['purchasePrice'], axis=1)
 
-#change 'generation' to string for hover tooltip on main graph
+# change 'generation' to string for hover tooltip on main graph
 genstr = []
 
 for x in df2['generation']:
@@ -120,26 +122,26 @@ df2['generationStr'] = genstr
 utcTime = []
 
 for x in df['endedAt']:
- x = int(x)
- x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
- utcTime.append(x)
- # print(utcTime)
+    x = int(x)
+    x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+    utcTime.append(x)
+    # print(utcTime)
 
 df2['timeStamp'] = utcTime
 df2 = df2.drop(['endedAt'], axis=1)
 
 ###FILTER####
 
-#base data
+# base data
 warrior = df2
 
-warriorC = df2[(df2["rarity"]=='common')]
-warriorU = df2[(df2["rarity"]=='uncommon')]
-warriorR = df2[(df2["rarity"]=='rare')]
-warriorL = df2[(df2["rarity"]=='legendary')]
-warriorM = df2[(df2["rarity"]=='mythic')]
+warriorC = df2[(df2["rarity"] == 'common')]
+warriorU = df2[(df2["rarity"] == 'uncommon')]
+warriorR = df2[(df2["rarity"] == 'rare')]
+warriorL = df2[(df2["rarity"] == 'legendary')]
+warriorM = df2[(df2["rarity"] == 'mythic')]
 
-#table data - drop 'generationStr' for readability
+# table data - drop 'generationStr' for readability
 knight = df2
 knight = knight.drop(['generationStr'], axis=1)
 
@@ -257,8 +259,8 @@ app.layout = html.Div(
         html.Div(
             children="Random playground for various tavern dashboards."),
 
-        html.Div(
-            children="Data last updated: {}.".format(currentTime)),
+        html.Div(id='last_timestamp',
+                 children=["Data last updated: {}.".format(currentTime)]),
 
         html.Div(
             children=[
@@ -310,6 +312,11 @@ app.layout = html.Div(
                      'placement': 'bottom'},
         ),
 
+        dcc.Interval(
+            id='interval-component',
+            interval=30 * 60000,
+            n_intervals=0),
+
         dcc.Graph(id='main-chart', figure=fig),
 
         dash_table.DataTable(id='main-table',
@@ -326,11 +333,78 @@ app.layout = html.Div(
 
 
 @app.callback(
+    [Output("last_timestamp", "children")],
+    [Input("interval-component", "n_intervals")]
+)
+def update_timestamp(n):
+    currentTime = datetime.datetime.utcnow()
+    return ["Data last updated: {}.".format(currentTime)]
+
+
+@app.callback(
     [Output("main-table", "data")],
     [Input("main-class", "value"),
-     Input("gen-slider", "value")]
+     Input("gen-slider", "value"),
+     Input("interval-component", "n_intervals")]
 )
-def update_tables(option_selected, gen_slider):
+def update_tables(option_selected, gen_slider, n):
+    # update dataframe
+    url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+    r = requests.post(url, json={"query": query})
+    json_data = json.loads(r.text)
+
+    df_data = json_data['data']['saleAuctions']
+    df = pd.DataFrame(df_data)
+
+    df2 = df['tokenId'].apply(pd.Series)
+
+    df2 = pd.concat([df2, df['purchasePrice']], axis=1)
+    df2 = pd.concat([df2, df['endedAt']], axis=1)
+
+    df2 = df2.reindex(columns=cols)
+
+    df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
+
+    # drop empty values from purchasePrice
+    df2.dropna(subset=['purchasePrice'])
+
+    soldPrice = []
+
+    for x in df['purchasePrice']:
+        for y in x:
+            priceLen = len(x) - 16
+        x = x[: priceLen]
+        x = int(float(x)) / 100
+        soldPrice.append(x)
+
+    df2['soldPrice'] = soldPrice
+    df2 = df2.drop(['purchasePrice'], axis=1)
+
+    # change 'generation' to string for hover tooltip on main graph
+    genstr = []
+
+    for x in df2['generation']:
+        x = str(x)
+        genstr.append(x)
+
+    df2['generationStr'] = genstr
+
+    utcTime = []
+
+    for x in df['endedAt']:
+        x = int(x)
+        x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+        utcTime.append(x)
+        # print(utcTime)
+
+    df2['timeStamp'] = utcTime
+    df2 = df2.drop(['endedAt'], axis=1)
+
+    ###FILTER####
+
+    # base data
+    warrior = df2
+
     if option_selected is None:
         filtered_df = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
         filtered_df = filtered_df.drop(['generationStr'], axis=1)
@@ -344,9 +418,67 @@ def update_tables(option_selected, gen_slider):
 @app.callback(
     Output("main-chart", "figure"),
     [Input("main-class", "value"),
-     Input("gen-slider", "value")]
+     Input("gen-slider", "value"),
+     Input("interval-component", "n_intervals")]
 )
-def update_charts(option_selected, gen_slider):
+def update_charts(option_selected, gen_slider, n):
+    # update dataframe
+    url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+    r = requests.post(url, json={"query": query})
+    json_data = json.loads(r.text)
+
+    df_data = json_data['data']['saleAuctions']
+    df = pd.DataFrame(df_data)
+
+    df2 = df['tokenId'].apply(pd.Series)
+
+    df2 = pd.concat([df2, df['purchasePrice']], axis=1)
+    df2 = pd.concat([df2, df['endedAt']], axis=1)
+
+    df2 = df2.reindex(columns=cols)
+
+    df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
+
+    # drop empty values from purchasePrice
+    df2.dropna(subset=['purchasePrice'])
+
+    soldPrice = []
+
+    for x in df['purchasePrice']:
+        for y in x:
+            priceLen = len(x) - 16
+        x = x[: priceLen]
+        x = int(float(x)) / 100
+        soldPrice.append(x)
+
+    df2['soldPrice'] = soldPrice
+    df2 = df2.drop(['purchasePrice'], axis=1)
+
+    # change 'generation' to string for hover tooltip on main graph
+    genstr = []
+
+    for x in df2['generation']:
+        x = str(x)
+        genstr.append(x)
+
+    df2['generationStr'] = genstr
+
+    utcTime = []
+
+    for x in df['endedAt']:
+        x = int(x)
+        x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+        utcTime.append(x)
+        # print(utcTime)
+
+    df2['timeStamp'] = utcTime
+    df2 = df2.drop(['endedAt'], axis=1)
+
+    ###FILTER####
+
+    # base data
+    warrior = df2
+
     if option_selected is None:
         filtered_dataC = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
         filtered_dataU = warrior[(warrior['generation'] >= gen_slider[0]) & (warrior['generation'] <= gen_slider[1])]
