@@ -75,7 +75,8 @@ r = requests.post(url, json={"query": query})
 json_data = json.loads(r.text)
 
 # getting timestamp for "last updated"
-currentTime = datetime.datetime.utcnow()
+# currentTime = datetime.datetime.utcnow()
+currentTime = ''
 
 df_data = json_data['data']['saleAuctions']
 df = pd.DataFrame(df_data)
