@@ -28,14 +28,6 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 init_notebook_mode(connected=True)
 cf.go_offline
 
-# query = """query {
-#    saleAuction(id: 2328) {
-#    id
-#    endedAt
-#    endingPrice
-#    }
-# }"""
-
 query = """query {
   saleAuctions(first:1000 orderBy: endedAt orderDirection: desc 
   		where: {
@@ -64,15 +56,50 @@ query = """query {
 }
 """
 
+query_h = """query {
+  assistingAuctions(first:1000 orderBy: endedAt orderDirection: desc 
+  		where: {
+        open: false
+        purchasePrice_not: null
+      }
+
+
+  		) {
+    id
+    tokenId {
+      id
+      rarity
+      generation
+      mainClass
+      subClass
+      statBoost1
+      statBoost2
+      profession
+      summons
+      maxSummons
+    }
+  	endedAt
+    purchasePrice
+  }
+}
+"""
+
 url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
 r = requests.post(url, json={"query": query})
+r_h = requests.post(url, json={"query": query_h})
 
 # if r.status_code == 200:
 #     print(json.dumps(r.json(), indent=2))
 # else:
 #     raise Exception(f"Query failed to run with a {r.status_code}.")
 
+# if r_h.status_code == 200:
+#     print(json.dumps(r_h.json(), indent=2))
+# else:
+#     raise Exception(f"Query failed to run with a {r_h.status_code}.")
+
 json_data = json.loads(r.text)
+json_data_h = json.loads(r_h.text)
 
 # getting timestamp for "last updated"
 # currentTime = datetime.datetime.utcnow()
@@ -81,24 +108,36 @@ currentTime = ''
 df_data = json_data['data']['saleAuctions']
 df = pd.DataFrame(df_data)
 
+df_h_data = json_data_h['data']['assistingAuctions']
+df_h = pd.DataFrame(df_h_data)
+
 df['tokenId'].apply(pd.Series)
+df_h['tokenId'].apply(pd.Series)
 
 df2 = df['tokenId'].apply(pd.Series)
+df2_h = df['tokenId'].apply(pd.Series)
 
 df2 = pd.concat([df2, df['purchasePrice']], axis=1)
 df2 = pd.concat([df2, df['endedAt']], axis=1)
+df2_h = pd.concat([df2_h, df_h['purchasePrice']], axis=1)
+df2_h = pd.concat([df2_h, df_h['endedAt']], axis=1)
 
 cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession', 'summons',
         'maxSummons', 'purchasePrice', 'endedAt']
+cols_h = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession', 'summons',
+          'maxSummons', 'purchasePrice', 'endedAt']
 
 df2 = df2.reindex(columns=cols)
+df2_h = df2_h.reindex(columns=cols_h)
 
 df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
-# print(df2)
+df2_h['rarity'] = df2_h['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
 
 # drop empty values from purchasePrice
 df2.dropna(subset=['purchasePrice'])
+df2_h.dropna(subset=['purchasePrice'])
 
+# sold to purchase
 soldPrice = []
 
 for x in df['purchasePrice']:
@@ -111,7 +150,21 @@ for x in df['purchasePrice']:
 df2['soldPrice'] = soldPrice
 df2 = df2.drop(['purchasePrice'], axis=1)
 
+# hired to purchase
+hiredPrice = []
+
+for x in df_h['purchasePrice']:
+    for y in x:
+        priceLen = len(x) - 16
+    x = x[: priceLen]
+    x = int(float(x)) / 100
+    hiredPrice.append(x)
+
+df2_h['hiredPrice'] = hiredPrice
+df2_h = df2_h.drop(['purchasePrice'], axis=1)
+
 # change 'generation' to string for hover tooltip on main graph
+# sold generation to str
 genstr = []
 
 for x in df2['generation']:
@@ -120,6 +173,16 @@ for x in df2['generation']:
 
 df2['generationStr'] = genstr
 
+# hired generation to str
+genstr = []
+
+for x in df2_h['generation']:
+    x = str(x)
+    genstr.append(x)
+
+df2_h['generationStr'] = genstr
+
+# change 'timestamp' to utc time for hover tooltip on main graph
 utcTime = []
 
 for x in df['endedAt']:
@@ -131,9 +194,21 @@ for x in df['endedAt']:
 df2['timeStamp'] = utcTime
 df2 = df2.drop(['endedAt'], axis=1)
 
+# hired timestamp to utctime
+utcTime = []
+
+for x in df_h['endedAt']:
+    x = int(x)
+    x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+    utcTime.append(x)
+    # print(utcTime)
+
+df2_h['timeStamp'] = utcTime
+df2_h = df2_h.drop(['endedAt'], axis=1)
+
 ###FILTER####
 
-# base data
+# sold base data
 warrior = df2
 
 warriorC = df2[(df2["rarity"] == 'common')]
@@ -146,7 +221,20 @@ warriorM = df2[(df2["rarity"] == 'mythic')]
 knight = df2
 knight = knight.drop(['generationStr'], axis=1)
 
-###MAIN GRAPH####
+# hired base data
+warrior_h = df2_h
+
+warriorC_h = df2_h[(df2_h["rarity"] == 'common')]
+warriorU_h = df2_h[(df2_h["rarity"] == 'uncommon')]
+warriorR_h = df2_h[(df2_h["rarity"] == 'rare')]
+warriorL_h = df2_h[(df2_h["rarity"] == 'legendary')]
+warriorM_h = df2_h[(df2_h["rarity"] == 'mythic')]
+
+# table data - drop 'generationStr' for readability
+knight_h = df2_h
+knight_h = knight_h.drop(['generationStr'], axis=1)
+
+###SOLD MAIN GRAPH####
 fig = go.Figure()
 
 # px.scatter(warriorC, x="timeStamp", y="soldPrice",
@@ -245,6 +333,105 @@ fig.update_layout(title='Tavern Sales - Last 1000 Heroes Sold',
 fig.update_xaxes(showspikes=True)
 fig.update_yaxes(showspikes=True)
 
+### HIRED MAIN GRAPH####
+fig_h = go.Figure()
+
+# px.scatter(warriorC, x="timeStamp", y="hiredPrice",
+#                 hover_name="id", hover_data={'rarity'})])
+
+fig_h.add_trace(go.Scatter(x=warriorC_h.timeStamp, y=warriorC_h.hiredPrice, mode='markers', name='Common',
+                           hovertemplate=
+                           '<b>ID</b>: %{text}<br>' +
+                           '<b>Price</b>: %{y} Jewels' +
+                           '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                           text=warriorC_h['id'] + '<br>' +
+                                '<b>Rarity</b>: ' + warriorC_h['rarity'] + '<br>' +
+                                '<b>Generation</b>: ' + warriorC_h['generationStr'] + '<br>' + '<br>' +
+                                '<b>Main Class</b>: ' + warriorC_h['mainClass'] + '<br>' +
+                                '<b>Sub Class</b>: ' + warriorC_h['subClass'] + '<br>' +
+                                '<b>Primary Boost</b>: ' + warriorC_h['statBoost1'] + '<br>' +
+                                '<b>Secondary Boost</b>: ' + warriorC_h['statBoost2'] + '<br>' +
+                                '<b>Profession</b>: ' + warriorC_h['profession'] + '<br>',
+                           marker=dict(color='rgba(219, 217, 222, 1)', size=7)
+
+                           ))
+
+fig_h.add_trace(go.Scatter(x=warriorU_h.timeStamp, y=warriorU_h.hiredPrice, mode='markers', name='Uncommon',
+                           hovertemplate=
+                           '<b>ID</b>: %{text}<br>' +
+                           '<b>Price</b>: %{y} Jewels' +
+                           '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                           text=warriorU_h['id'] + '<br>' +
+                                '<b>Rarity</b>: ' + warriorU_h['rarity'] + '<br>' +
+                                '<b>Generation</b>: ' + warriorU_h['generationStr'] + '<br>' + '<br>' +
+                                '<b>Main Class</b>: ' + warriorU_h['mainClass'] + '<br>' +
+                                '<b>Sub Class</b>: ' + warriorU_h['subClass'] + '<br>' +
+                                '<b>Primary Boost</b>: ' + warriorU_h['statBoost1'] + '<br>' +
+                                '<b>Secondary Boost</b>: ' + warriorU_h['statBoost2'] + '<br>' +
+                                '<b>Profession</b>: ' + warriorU_h['profession'] + '<br>',
+                           marker=dict(color='rgba(115, 191, 131, 1)', size=7)
+                           ))
+
+fig_h.add_trace(go.Scatter(x=warriorR_h.timeStamp, y=warriorR_h.hiredPrice, mode='markers', name='Rare',
+                           hovertemplate=
+                           '<b>ID</b>: %{text}<br>' +
+                           '<b>Price</b>: %{y} Jewels' +
+                           '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                           text=warriorR_h['id'] + '<br>' +
+                                '<b>Rarity</b>: ' + warriorR_h['rarity'] + '<br>' +
+                                '<b>Generation</b>: ' + warriorR_h['generationStr'] + '<br>' + '<br>' +
+                                '<b>Main Class</b>: ' + warriorR_h['mainClass'] + '<br>' +
+                                '<b>Sub Class</b>: ' + warriorR_h['subClass'] + '<br>' +
+                                '<b>Primary Boost</b>: ' + warriorR_h['statBoost1'] + '<br>' +
+                                '<b>Secondary Boost</b>: ' + warriorR_h['statBoost2'] + '<br>' +
+                                '<b>Profession</b>: ' + warriorR_h['profession'] + '<br>',
+                           marker=dict(color='rgba(53, 147, 183, 1)', size=7)
+                           ))
+
+fig_h.add_trace(go.Scatter(x=warriorL_h.timeStamp, y=warriorL_h.hiredPrice, mode='markers', name='Legendary',
+                           hovertemplate=
+                           '<b>ID</b>: %{text}<br>' +
+                           '<b>Price</b>: %{y} Jewels' +
+                           '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                           text=warriorL_h['id'] + '<br>' +
+                                '<b>Rarity</b>: ' + warriorL_h['rarity'] + '<br>' +
+                                '<b>Generation</b>: ' + warriorL_h['generationStr'] + '<br>' + '<br>' +
+                                '<b>Main Class</b>: ' + warriorL_h['mainClass'] + '<br>' +
+                                '<b>Sub Class</b>: ' + warriorL_h['subClass'] + '<br>' +
+                                '<b>Primary Boost</b>: ' + warriorL_h['statBoost1'] + '<br>' +
+                                '<b>Secondary Boost</b>: ' + warriorL_h['statBoost2'] + '<br>' +
+                                '<b>Profession</b>: ' + warriorL_h['profession'] + '<br>',
+                           marker=dict(color='rgba(255, 164, 62, 1)', size=7)
+                           ))
+
+fig_h.add_trace(go.Scatter(x=warriorM_h.timeStamp, y=warriorM_h.hiredPrice, mode='markers', name='Mythic',
+                           hovertemplate=
+                           '<b>ID</b>: %{text}<br>' +
+                           '<b>Price</b>: %{y} Jewels' +
+                           '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                           text=warriorM_h['id'] + '<br>' +
+                                '<b>Rarity</b>: ' + warriorM_h['rarity'] + '<br>' +
+                                '<b>Generation</b>: ' + warriorM_h['generationStr'] + '<br>' + '<br>' +
+                                '<b>Main Class</b>: ' + warriorM_h['mainClass'] + '<br>' +
+                                '<b>Sub Class</b>: ' + warriorM_h['subClass'] + '<br>' +
+                                '<b>Primary Boost</b>: ' + warriorM_h['statBoost1'] + '<br>' +
+                                '<b>Secondary Boost</b>: ' + warriorM_h['statBoost2'] + '<br>' +
+                                '<b>Profession</b>: ' + warriorM_h['profession'] + '<br>',
+                           marker=dict(color='rgba(178, 109, 216, 1)', size=7)
+                           ))
+
+fig_h.update_traces(marker=dict(line=dict(width=.5)))
+fig_h.update_layout(title='Tavern Sales - Last 1000 Heroes Hired',
+                    titlefont=dict(family='Arial', size=24),
+                    xaxis=dict(showgrid=True, ticks='outside'),
+                    xaxis_title='Date in UTC',
+                    yaxis_title='Jewel',
+                    plot_bgcolor='white'
+                    )
+
+fig_h.update_xaxes(showspikes=True)
+fig_h.update_yaxes(showspikes=True)
+
 # Initialize
 # Setup the style from the link:
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -252,7 +439,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 
-PAGE_SIZE = 25
+PAGE_SIZE = 20
 
 app.layout = html.Div(
     children=[
@@ -263,6 +450,7 @@ app.layout = html.Div(
         html.Div(id='last_timestamp',
                  children=["Data last updated: {}.".format(currentTime)]),
 
+        ####SOLD SECTION####
         html.Div(
             children=[
                 html.Div(children='Main Class', style={'fontSize': "16px", 'width': '50%'}, className='menu-title'),
@@ -326,6 +514,66 @@ app.layout = html.Div(
                              page_current=0,
                              page_size=PAGE_SIZE),
 
+        ####HIRED SECTION####
+        html.Div(
+            children=[
+                html.Div(children='Main Class', style={'fontSize': "16px", 'width': '50%'}, className='menu-title'),
+                dcc.Dropdown(
+                    id='main-class-h',
+                    options=[
+                        {'label': MainClass, 'value': MainClass}
+                        for MainClass in warrior_h.mainClass.sort_values().unique()
+                    ],  # 'warrior_h' is the filter
+                    clearable=True,
+                    searchable=False,
+                    className='dropdown', style={'fontSize': "14px", 'textAlign': 'center'},
+                ),
+            ],
+            className='menu',
+        ),  # the dropdown function
+
+        dcc.RangeSlider(
+            id='gen-slider-h',  # any name you'd like to give it
+            marks={
+                0: '0',  # key=position, value=what you see
+                1: '1',
+                2: '2',
+                3: '3',
+                4: '4',
+                5: '5',
+                6: '6',
+                7: '7',
+                8: '8',
+                9: '9',
+                10: '10',
+                11: '11',
+            },
+            step=1,  # number of steps between values
+            min=0,
+            max=11,
+            value=[0, 11],  # default value initially chosen
+            dots=True,  # True, False - insert dots, only when step>1
+            allowCross=False,  # True,False - Manage handle crossover
+            disabled=False,  # True,False - disable handle
+            # pushable=1,            # any number, or True with multiple handles
+            # updatemode='drag',  # 'mouseup', 'drag' - update value method
+            # included=True,         # True, False - highlight handle
+            # vertical=False,        # True, False - vertical, horizontal slider
+            # verticalHeight=900,    # hight of slider (pixels) when vertical=True
+            className='None',
+            tooltip={'always visible': False,  # show current slider values
+                     'placement': 'bottom'},
+        ),
+
+        dcc.Graph(id='main-chart-h', figure=fig_h),
+
+        dash_table.DataTable(id='main-table-h',
+                             columns=[{"name": i, "id": i} for i in knight_h.columns],
+                             data=knight_h.to_dict('records'),
+                             page_current=0,
+                             page_size=PAGE_SIZE),
+
+        ####BOTTOM TEXT####
         html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436"),
 
         html.Div(children="Tips are appreciated :D"),
@@ -606,6 +854,302 @@ def update_charts(option_selected, gen_slider, n):
     newfig.update_yaxes(showspikes=True)
 
     return newfig
+
+
+####HIRED CALLBACK####
+
+@app.callback(
+    [Output("main-table-h", "data")],
+    [Input("main-class-h", "value"),
+     Input("gen-slider-h", "value"),
+     Input("interval-component", "n_intervals")]
+)
+def update_tables_h(option_selected_h, gen_slider_h, n):
+    r_h = requests.post(url, json={"query": query_h})
+
+    json_data_h = json.loads(r_h.text)
+
+    # getting timestamp for "last updated"
+    # currentTime = datetime.datetime.utcnow()
+    currentTime = ''
+
+    df_h_data = json_data_h['data']['assistingAuctions']
+    df_h = pd.DataFrame(df_h_data)
+
+    df_h['tokenId'].apply(pd.Series)
+
+    df2_h = df['tokenId'].apply(pd.Series)
+
+    df2_h = pd.concat([df2_h, df_h['purchasePrice']], axis=1)
+    df2_h = pd.concat([df2_h, df_h['endedAt']], axis=1)
+
+    cols_h = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession',
+              'summons', 'maxSummons', 'purchasePrice', 'endedAt']
+
+    df2_h = df2_h.reindex(columns=cols_h)
+
+    df2_h['rarity'] = df2_h['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
+
+    # drop empty values from purchasePrice
+    df2_h.dropna(subset=['purchasePrice'])
+
+    hiredPrice = []
+
+    for x in df_h['purchasePrice']:
+        for y in x:
+            priceLen = len(x) - 16
+        x = x[: priceLen]
+        x = int(float(x)) / 100
+        hiredPrice.append(x)
+
+    df2_h['hiredPrice'] = hiredPrice
+    df2_h = df2_h.drop(['purchasePrice'], axis=1)
+
+    # change 'generation' to string for hover tooltip on main graph
+    genstr = []
+
+    for x in df2_h['generation']:
+        x = str(x)
+        genstr.append(x)
+
+    df2_h['generationStr'] = genstr
+
+    utcTime = []
+
+    for x in df_h['endedAt']:
+        x = int(x)
+        x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+        utcTime.append(x)
+        # print(utcTime)
+
+    df2_h['timeStamp'] = utcTime
+    df2_h = df2_h.drop(['endedAt'], axis=1)
+
+    ###FILTER####
+
+    # base data
+    warrior_h = df2_h
+
+    if option_selected_h is None:
+        filtered_df_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_df_h = filtered_df_h.drop(['generationStr'], axis=1)
+    else:
+        filtered_df_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_df_h = filtered_df_h[filtered_df_h['mainClass'] == option_selected_h]
+        filtered_df_h = filtered_df_h.drop(['generationStr'], axis=1)
+    return [filtered_df_h.to_dict('records')]
+
+
+@app.callback(
+    Output("main-chart-h", "figure"),
+    [Input("main-class-h", "value"),
+     Input("gen-slider-h", "value"),
+     Input("interval-component", "n_intervals")]
+)
+def update_charts_h(option_selected_h, gen_slider_h, n):
+    r_h = requests.post(url, json={"query": query_h})
+
+    json_data_h = json.loads(r_h.text)
+
+    # getting timestamp for "last updated"
+    # currentTime = datetime.datetime.utcnow()
+    currentTime = ''
+
+    df_h_data = json_data_h['data']['assistingAuctions']
+    df_h = pd.DataFrame(df_h_data)
+
+    df_h['tokenId'].apply(pd.Series)
+
+    df2_h = df['tokenId'].apply(pd.Series)
+
+    df2_h = pd.concat([df2_h, df_h['purchasePrice']], axis=1)
+    df2_h = pd.concat([df2_h, df_h['endedAt']], axis=1)
+
+    cols_h = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession',
+              'summons', 'maxSummons', 'purchasePrice', 'endedAt']
+
+    df2_h = df2_h.reindex(columns=cols_h)
+
+    df2_h['rarity'] = df2_h['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
+
+    # drop empty values from purchasePrice
+    df2_h.dropna(subset=['purchasePrice'])
+
+    hiredPrice = []
+
+    for x in df_h['purchasePrice']:
+        for y in x:
+            priceLen = len(x) - 16
+        x = x[: priceLen]
+        x = int(float(x)) / 100
+        hiredPrice.append(x)
+
+    df2_h['hiredPrice'] = hiredPrice
+    df2_h = df2_h.drop(['purchasePrice'], axis=1)
+
+    # change 'generation' to string for hover tooltip on main graph
+    genstr = []
+
+    for x in df2_h['generation']:
+        x = str(x)
+        genstr.append(x)
+
+    df2_h['generationStr'] = genstr
+
+    utcTime = []
+
+    for x in df_h['endedAt']:
+        x = int(x)
+        x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+        utcTime.append(x)
+        # print(utcTime)
+
+    df2_h['timeStamp'] = utcTime
+    df2_h = df2_h.drop(['endedAt'], axis=1)
+
+    ###FILTER####
+
+    # base data
+    warrior_h = df2_h
+
+    if option_selected_h is None:
+        filtered_dataC_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataU_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataR_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataL_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataM_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+
+        filtered_dataC_h = filtered_dataC_h[(filtered_dataC_h['rarity'] == 'common')]
+        filtered_dataU_h = filtered_dataU_h[(filtered_dataU_h['rarity'] == 'uncommon')]
+        filtered_dataR_h = filtered_dataR_h[(filtered_dataR_h['rarity'] == 'rare')]
+        filtered_dataL_h = filtered_dataL_h[(filtered_dataL_h['rarity'] == 'legendary')]
+        filtered_dataM_h = filtered_dataM_h[(filtered_dataM_h['rarity'] == 'mythic')]
+    else:
+        filtered_dataC_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataU_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataR_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataL_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+        filtered_dataM_h = warrior_h[
+            (warrior_h['generation'] >= gen_slider_h[0]) & (warrior_h['generation'] <= gen_slider_h[1])]
+
+        filtered_dataC_h = filtered_dataC_h[
+            (filtered_dataC_h['mainClass'] == option_selected_h) & (filtered_dataC_h["rarity"] == 'common')]
+        filtered_dataU_h = filtered_dataU_h[
+            (filtered_dataU_h['mainClass'] == option_selected_h) & (filtered_dataU_h["rarity"] == 'uncommon')]
+        filtered_dataR_h = filtered_dataR_h[
+            (filtered_dataR_h['mainClass'] == option_selected_h) & (filtered_dataR_h["rarity"] == 'rare')]
+        filtered_dataL_h = filtered_dataL_h[
+            (filtered_dataL_h['mainClass'] == option_selected_h) & (filtered_dataL_h["rarity"] == 'legendary')]
+        filtered_dataM_h = filtered_dataM_h[
+            (filtered_dataM_h['mainClass'] == option_selected_h) & (filtered_dataM_h["rarity"] == 'mythic')]
+
+    trace1 = go.Scatter(x=filtered_dataC_h.timeStamp, y=filtered_dataC_h.hiredPrice, mode='markers', name='Common',
+                        hovertemplate=
+                        '<b>ID</b>: %{text}<br>' +
+                        '<b>Price</b>: %{y} Jewels' +
+                        '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                        text=filtered_dataC_h['id'] + '<br>' +
+                             '<b>Rarity</b>: ' + filtered_dataC_h['rarity'] + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataC_h['generationStr'] + '<br>' + '<br>' +
+                             '<b>Main Class</b>: ' + filtered_dataC_h['mainClass'] + '<br>' +
+                             '<b>Sub Class</b>: ' + filtered_dataC_h['subClass'] + '<br>' +
+                             '<b>Primary Boost</b>: ' + filtered_dataC_h['statBoost1'] + '<br>' +
+                             '<b>Secondary Boost</b>: ' + filtered_dataC_h['statBoost2'] + '<br>' +
+                             '<b>Profession</b>: ' + filtered_dataC_h['profession'] + '<br>',
+                        marker=dict(color='rgba(219, 217, 222, 1)', size=7)
+
+                        )
+
+    trace2 = go.Scatter(x=filtered_dataU_h.timeStamp, y=filtered_dataU_h.hiredPrice, mode='markers', name='Uncommon',
+                        hovertemplate=
+                        '<b>ID</b>: %{text}<br>' +
+                        '<b>Price</b>: %{y} Jewels' +
+                        '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                        text=filtered_dataU_h['id'] + '<br>' +
+                             '<b>Rarity</b>: ' + filtered_dataU_h['rarity'] + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataU_h['generationStr'] + '<br>' + '<br>' +
+                             '<b>Main Class</b>: ' + filtered_dataU_h['mainClass'] + '<br>' +
+                             '<b>Sub Class</b>: ' + filtered_dataU_h['subClass'] + '<br>' +
+                             '<b>Primary Boost</b>: ' + filtered_dataU_h['statBoost1'] + '<br>' +
+                             '<b>Secondary Boost</b>: ' + filtered_dataU_h['statBoost2'] + '<br>' +
+                             '<b>Profession</b>: ' + filtered_dataU_h['profession'] + '<br>',
+                        marker=dict(color='rgba(115, 191, 131, 1)', size=7)
+                        )
+
+    trace3 = go.Scatter(x=filtered_dataR_h.timeStamp, y=filtered_dataR_h.hiredPrice, mode='markers', name='Rare',
+                        hovertemplate=
+                        '<b>ID</b>: %{text}<br>' +
+                        '<b>Price</b>: %{y} Jewels' +
+                        '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                        text=filtered_dataR_h['id'] + '<br>' +
+                             '<b>Rarity</b>: ' + filtered_dataR_h['rarity'] + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataR_h['generationStr'] + '<br>' + '<br>' +
+                             '<b>Main Class</b>: ' + filtered_dataR_h['mainClass'] + '<br>' +
+                             '<b>Sub Class</b>: ' + filtered_dataR_h['subClass'] + '<br>' +
+                             '<b>Primary Boost</b>: ' + filtered_dataR_h['statBoost1'] + '<br>' +
+                             '<b>Secondary Boost</b>: ' + filtered_dataR_h['statBoost2'] + '<br>' +
+                             '<b>Profession</b>: ' + filtered_dataR_h['profession'] + '<br>',
+                        marker=dict(color='rgba(53, 147, 183, 1)', size=7)
+                        )
+
+    trace4 = go.Scatter(x=filtered_dataL_h.timeStamp, y=filtered_dataL_h.hiredPrice, mode='markers', name='Legendary',
+                        hovertemplate=
+                        '<b>ID</b>: %{text}<br>' +
+                        '<b>Price</b>: %{y} Jewels' +
+                        '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                        text=filtered_dataL_h['id'] + '<br>' +
+                             '<b>Rarity</b>: ' + filtered_dataL_h['rarity'] + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataL_h['generationStr'] + '<br>' + '<br>' +
+                             '<b>Main Class</b>: ' + filtered_dataL_h['mainClass'] + '<br>' +
+                             '<b>Sub Class</b>: ' + filtered_dataL_h['subClass'] + '<br>' +
+                             '<b>Primary Boost</b>: ' + filtered_dataL_h['statBoost1'] + '<br>' +
+                             '<b>Secondary Boost</b>: ' + filtered_dataL_h['statBoost2'] + '<br>' +
+                             '<b>Profession</b>: ' + filtered_dataL_h['profession'] + '<br>',
+                        marker=dict(color='rgba(255, 164, 62, 1)', size=7)
+                        )
+
+    trace5 = go.Scatter(x=filtered_dataM_h.timeStamp, y=filtered_dataM_h.hiredPrice, mode='markers', name='Mythic',
+                        hovertemplate=
+                        '<b>ID</b>: %{text}<br>' +
+                        '<b>Price</b>: %{y} Jewels' +
+                        '<br><b>Hired At</b>: %{x} UTC<br><extra></extra>',
+                        text=filtered_dataM_h['id'] + '<br>' +
+                             '<b>Rarity</b>: ' + filtered_dataM_h['rarity'] + '<br>' +
+                             '<b>Generation</b>: ' + filtered_dataM_h['generationStr'] + '<br>' + '<br>' +
+                             '<b>Main Class</b>: ' + filtered_dataM_h['mainClass'] + '<br>' +
+                             '<b>Sub Class</b>: ' + filtered_dataM_h['subClass'] + '<br>' +
+                             '<b>Primary Boost</b>: ' + filtered_dataM_h['statBoost1'] + '<br>' +
+                             '<b>Secondary Boost</b>: ' + filtered_dataM_h['statBoost2'] + '<br>' +
+                             '<b>Profession</b>: ' + filtered_dataM_h['profession'] + '<br>',
+                        marker=dict(color='rgba(178, 109, 216, 1)', size=7)
+                        )
+
+    data = [trace1, trace2, trace3, trace4, trace5]
+    newfig_h = go.Figure(data=data)
+    newfig_h.update_traces(marker=dict(line=dict(width=.5)))
+    newfig_h.update_layout(title='Tavern Sales - Last 1000 Heroes Hired',
+                           titlefont=dict(family='Arial', size=24),
+                           xaxis=dict(showgrid=True, ticks='outside'),
+                           xaxis_title='Date in UTC',
+                           yaxis_title='Jewel',
+                           plot_bgcolor='white'
+                           )
+
+    newfig_h.update_xaxes(showspikes=True)
+    newfig_h.update_yaxes(showspikes=True)
+
+    return newfig_h
 
 
 if __name__ == "__main__":
