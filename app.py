@@ -155,7 +155,7 @@ app.layout = html.Div(
                     id='main-class',
                     options=[
                         {'label': 'Archer', 'value': 'Archer'},
-                        {'label': 'Darkknight', 'value': 'Darkknight'},
+                        {'label': 'DarkKnight', 'value': 'DarkKnight'},
                         {'label': 'Dragoon', 'value': 'Dragoon'},
                         {'label': 'Knight', 'value': 'Knight'},
                         {'label': 'Monk', 'value': 'Monk'},
