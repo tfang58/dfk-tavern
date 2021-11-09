@@ -142,7 +142,7 @@ app.layout = html.Div(
 
         dcc.Interval(
             id='interval-component',
-            interval=60 * 1000,
+            interval= 5 * 60 * 1000,
             n_intervals=0),
 
         dcc.Store(id='intermediate-value', data=[], storage_type='memory'),
