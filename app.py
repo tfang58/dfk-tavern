@@ -257,7 +257,7 @@ app.layout = html.Div(
                              ),
 
         ####BOTTOM TEXT####
-        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe043",
+        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436",
                  style={'fontSize': "12px", 'padding': 10}),
 
     ]
