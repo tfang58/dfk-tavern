@@ -726,7 +726,7 @@ def update_charts(option_selected, prof_filter, gen_slider, n, jsonified_cleaned
         data = [trace1, trace2, trace3, trace4, trace5]
         newfig = go.Figure(data=data)
         newfig.update_traces(marker=dict(line=dict(width=.5)))
-        newfig.update_layout(title='Tavern Sales - Last 1000 Heroes Sold',
+        newfig.update_layout(title='Tavern Sales - Last 1000 Heroes Hired',
                              titlefont=dict(family='Arial', size=24),
                              xaxis=dict(showgrid=True, ticks='outside'),
                              xaxis_title='Date in UTC',
