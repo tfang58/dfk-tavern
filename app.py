@@ -84,7 +84,8 @@ query_h = """query {
 }
 """
 
-url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+url = "https://graph2.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+# url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
 r = requests.post(url, json={"query": query})
 r_h = requests.post(url, json={"query": query_h})
 
