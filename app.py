@@ -84,8 +84,7 @@ query_h = """query {
 }
 """
 
-url = "https://graph2.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
-# url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
 r = requests.post(url, json={"query": query})
 r_h = requests.post(url, json={"query": query_h})
 
@@ -143,7 +142,7 @@ app.layout = html.Div(
 
         dcc.Interval(
             id='interval-component',
-            interval= 30 * 60 * 1000,
+            interval=30 * 60 * 1000,
             n_intervals=0),
 
         dcc.Store(id='intermediate-value', data=[], storage_type='memory'),
@@ -200,35 +199,80 @@ app.layout = html.Div(
             style={'padding': 10, "width": "20%"}
         ),  # the dropdown function
 
-        dcc.RangeSlider(
-            id='gen-slider',  # any name you'd like to give it
-            marks={
-                0: '0',  # key=position, value=what you see
-                1: '1',
-                2: '2',
-                3: '3',
-                4: '4',
-                5: '5',
-                6: '6',
-                7: '7',
-                8: '8',
-                9: '9',
-                10: '10',
-                11: '11',
-            },
-            step=1,  # number of steps between values
-            min=0,
-            max=11,
-            value=[0, 11],  # default value initially chosen
-            dots=True,  # True, False - insert dots, only when step>1
-            allowCross=False,  # True,False - Manage handle crossover
-            disabled=False,  # True,False - disable handle
+        html.Div(
+            children=[
+                html.Div(children='Generation', style={'fontSize': "14px"}, className='menu-title'),
+                dcc.RangeSlider(
+                    id='gen-slider',  # any name you'd like to give it
+                    marks={
+                        0: '0',  # key=position, value=what you see
+                        1: '1',
+                        2: '2',
+                        3: '3',
+                        4: '4',
+                        5: '5',
+                        6: '6',
+                        7: '7',
+                        8: '8',
+                        9: '9',
+                        10: '10',
+                        11: '11',
+                    },
+                    step=1,  # number of steps between values
+                    min=0,
+                    max=11,
+                    value=[0, 11],  # default value initially chosen
+                    dots=True,  # True, False - insert dots, only when step>1
+                    allowCross=False,  # True,False - Manage handle crossover
+                    disabled=False,  # True,False - disable handle
 
-            className='None',
-            tooltip={'always visible': False,  # show current slider values
-                     'placement': 'bottom'},
+                    className='None',
+                    tooltip={'always visible': False,  # show current slider values
+                             'placement': 'bottom'},
 
-        ),
+                ),
+            ],
+            className='menu',
+            style={'padding': 10}
+        ),  # the dropdown function
+
+        html.Div(
+            children=[
+                html.Div(children='Summons Remaning (11 is used for Gen 0 Heroes)', style={'fontSize': "14px"},
+                         className='menu-title'),
+                dcc.RangeSlider(
+                    id='summon-slider',  # any name you'd like to give it
+                    marks={
+                        0: '0',  # key=position, value=what you see
+                        1: '1',
+                        2: '2',
+                        3: '3',
+                        4: '4',
+                        5: '5',
+                        6: '6',
+                        7: '7',
+                        8: '8',
+                        9: '9',
+                        10: '10',
+                        11: '11',
+                    },
+                    step=1,  # number of steps between values
+                    min=0,
+                    max=11,
+                    value=[0, 11],  # default value initially chosen
+                    dots=True,  # True, False - insert dots, only when step>1
+                    allowCross=False,  # True,False - Manage handle crossover
+                    disabled=False,  # True,False - disable handle
+
+                    className='None',
+                    tooltip={'always visible': False,  # show current slider values
+                             'placement': 'bottom'},
+
+                ),
+            ],
+            className='menu',
+            style={'padding': 10}
+        ),  # the dropdown function
 
         dcc.Loading(id='loading-graph', children=[html.Div(dcc.Graph(id='main-chart'))], type='default'),
 
@@ -241,7 +285,7 @@ app.layout = html.Div(
                                       {"name": 'Primary Boost', "id": 'statBoost1'},
                                       {"name": 'Secondary Boost', "id": 'statBoost2'},
                                       {"name": 'Profession Boost', "id": 'profession'},
-                                      {"name": 'Summons Used', "id": 'summons'},
+                                      {"name": 'Summons Remaining', "id": 'summons'},
                                       {"name": 'Max Summons', "id": 'maxSummons'},
                                       {"name": 'Price', "id": 'soldPrice'},
                                       # {"name": 'Timestamp', "id": 'Timestamp'},
@@ -303,6 +347,9 @@ def clean_data(n):
     # drop empty values from purchasePrice
     df2.dropna(subset=['purchasePrice'])
 
+    # reverse summons so it shows summons remaining instead of used
+    df2['summons'] = df2.apply(lambda x: 11 if x['generation'] == 0 else x['maxSummons'] - x['summons'], axis=1)
+
     soldPrice = []
 
     for x in df['purchasePrice']:
@@ -359,6 +406,9 @@ def clean_data(n):
     # drop empty values from purchasePrice
     df2.dropna(subset=['purchasePrice'])
 
+    # reverse summons so it shows summons remaining instead of used
+    df2['summons'] = df2.apply(lambda x: 11 if x['generation'] == 0 else x['maxSummons'] - x['summons'], axis=1)
+
     soldPrice = []
 
     for x in df['purchasePrice']:
@@ -409,11 +459,12 @@ def clean_data(n):
     [Input("main-class", "value"),
      Input("prof-filter", "value"),
      Input("gen-slider", "value"),
+     Input("summon-slider", "value"),
      Input("interval-component", "n_intervals"),
      Input('intermediate-value', 'data'),
      Input('dash-selection', 'value')]
 )
-def update_tables(option_selected, prof_filter, gen_slider, n, jsonified_cleaned_data, value):
+def update_tables(option_selected, prof_filter, gen_slider, summon_slider, n, jsonified_cleaned_data, value):
     # go through each of the dropdowns and initialize a list if any of them are None
     if value == 'HeroesSold':
         datasets = json.loads(jsonified_cleaned_data)
@@ -437,7 +488,8 @@ def update_tables(option_selected, prof_filter, gen_slider, n, jsonified_cleaned
 
         filtered_df = warrior[xy]
         filtered_df = filtered_df[
-            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])]
+            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])
+            & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
         filtered_df = filtered_df.drop(['generationStr'], axis=1)
 
         return [filtered_df.to_dict('records')]
@@ -464,7 +516,8 @@ def update_tables(option_selected, prof_filter, gen_slider, n, jsonified_cleaned
 
         filtered_df = warrior_h[xy]
         filtered_df = filtered_df[
-            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])]
+            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])
+            & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
         filtered_df = filtered_df.drop(['generationStr'], axis=1)
 
         return [filtered_df.to_dict('records')]
@@ -475,11 +528,12 @@ def update_tables(option_selected, prof_filter, gen_slider, n, jsonified_cleaned
     [Input("main-class", "value"),
      Input("prof-filter", "value"),
      Input("gen-slider", "value"),
+     Input("summon-slider", "value"),
      Input("interval-component", "n_intervals"),
      Input('intermediate-value', 'data'),
      Input('dash-selection', 'value')]
 )
-def update_charts(option_selected, prof_filter, gen_slider, n, jsonified_cleaned_data, value):
+def update_charts(option_selected, prof_filter, gen_slider, summon_slider, n, jsonified_cleaned_data, value):
     if value == 'HeroesSold':
         datasets = json.loads(jsonified_cleaned_data)
         warrior = pd.DataFrame(datasets['cleaned_df'])
@@ -505,7 +559,8 @@ def update_charts(option_selected, prof_filter, gen_slider, n, jsonified_cleaned
         filtered_df = warrior[xy]
 
         filtered_df = filtered_df[
-            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])]
+            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])
+            & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
 
         filtered_dataC = filtered_df[(filtered_df['rarity'] == 'common')]
         filtered_dataU = filtered_df[(filtered_df['rarity'] == 'uncommon')]
@@ -635,7 +690,8 @@ def update_charts(option_selected, prof_filter, gen_slider, n, jsonified_cleaned
         filtered_df = warrior_h[xy]
 
         filtered_df = filtered_df[
-            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])]
+            (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])
+            & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
 
         filtered_dataC = filtered_df[(filtered_df['rarity'] == 'common')]
         filtered_dataU = filtered_df[(filtered_df['rarity'] == 'uncommon')]
@@ -727,7 +783,7 @@ def update_charts(option_selected, prof_filter, gen_slider, n, jsonified_cleaned
         data = [trace1, trace2, trace3, trace4, trace5]
         newfig = go.Figure(data=data)
         newfig.update_traces(marker=dict(line=dict(width=.5)))
-        newfig.update_layout(title='Tavern Sales - Last 1000 Heroes Hired',
+        newfig.update_layout(title='Tavern Sales - Last 1000 Heroes Sold',
                              titlefont=dict(family='Arial', size=24),
                              xaxis=dict(showgrid=True, ticks='outside'),
                              xaxis_title='Date in UTC',
