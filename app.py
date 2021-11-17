@@ -28,108 +28,6 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 init_notebook_mode(connected=True)
 cf.go_offline
 
-query = """query getData($input: Int!){
-  saleAuctions(skip: $input first:1000 orderBy: endedAt orderDirection: desc 
-  		where: {
-        open: false
-        purchasePrice_not: null
-      }
-
-
-  		) {
-    id
-    tokenId {
-      id
-      rarity
-      generation
-      mainClass
-      subClass
-      statBoost1
-      statBoost2
-      profession
-      summons
-      maxSummons
-    }
-  	endedAt
-    purchasePrice
-  }
-}
-"""
-
-# query = """query {
-#   saleAuctions(first:1000 orderBy: endedAt orderDirection: desc
-#   		where: {
-#         open: false
-#         purchasePrice_not: null
-#       }
-
-
-#   		) {
-#     id
-#     tokenId {
-#       id
-#       rarity
-#       generation
-#       mainClass
-#       subClass
-#       statBoost1
-#       statBoost2
-#       profession
-#       summons
-#       maxSummons
-#     }
-#   	endedAt
-#     purchasePrice
-#   }
-# }
-# """
-
-query_h = """query {
-  assistingAuctions(first:1000 orderBy: endedAt orderDirection: desc 
-  		where: {
-        open: false
-        purchasePrice_not: null
-      }
-
-
-  		) {
-    id
-    tokenId {
-      id
-      rarity
-      generation
-      mainClass
-      subClass
-      statBoost1
-      statBoost2
-      profession
-      summons
-      maxSummons
-    }
-  	endedAt
-    purchasePrice
-  }
-}
-"""
-
-variables = {'input': 0}
-url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
-r = requests.post(url, json={"query": query, 'variables': variables})
-r_h = requests.post(url, json={"query": query_h})
-
-# if r.status_code == 200:
-#     print(json.dumps(r.json(), indent=2))
-# else:
-#     raise Exception(f"Query failed to run with a {r.status_code}.")
-
-# if r_h.status_code == 200:
-#     print(json.dumps(r_h.json(), indent=2))
-# else:
-#     raise Exception(f"Query failed to run with a {r_h.status_code}.")
-
-json_data = json.loads(r.text)
-json_data_h = json.loads(r_h.text)
-
 # Initialize
 # Setup the style from the link:
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -171,11 +69,20 @@ app.layout = html.Div(
 
         dcc.Interval(
             id='interval-component',
-            interval=30 * 60 * 1000,
+            interval=60 * 60 * 1000,
             n_intervals=0),
 
-        dcc.Store(id='raw-data', data=[], storage_type='memory'),
-        dcc.Store(id='intermediate-value', data=[], storage_type='memory'),
+        html.Div([
+            # Create element to hide/show, in this case an 'Input Component'
+            dcc.Input(
+                id='start-num',
+                value='1',
+            )
+        ], style={'display': 'none'}  # <-- This is the line that will be changed by the dropdown callback
+        ),
+
+        dcc.Store(id='intermediate-value', storage_type='memory'),
+        # dcc.Store(id='intermediate-value-h'),
 
         html.Div(
             children=[
@@ -338,29 +245,90 @@ app.layout = html.Div(
 )
 
 
-# update timestamp
+# put raw data into storage
 @app.callback(
-    [Output("last_timestamp", "children")],
-    [Input("interval-component", "n_intervals")]
+    Output("intermediate-value", "data"),
+    Input("interval-component", "n_intervals"),
+    Input("start-num", "value")
 )
-def update_timestamp(n):
-    currentTime = datetime.datetime.utcnow()
-    return ["Data last updated: {}.".format(currentTime)]
+def queryHeroes(n, start_num):
+    ###QUERY AND URL####
+    query = """query getHeroInfos($input: Int){
+      saleAuctions(skip: $input first:1000 orderBy: endedAt orderDirection: desc 
+            where: {
+            open: false
+            purchasePrice_not: null
+          }
 
 
-# put clean data in storage
-@app.callback(
-    Output('intermediate-value', 'data'),
-    Input("interval-component", "n_intervals")
-)
-def clean_data(n):
-    # update dataframe
-    r = requests.post(url, json={"query": query, "variables": variables})
-    json_data = json.loads(r.text)
+            ) {
+        id
+        tokenId {
+          id
+          rarity
+          generation
+          mainClass
+          subClass
+          statBoost1
+          statBoost2
+          profession
+          summons
+          maxSummons
+        }
+        endedAt
+        purchasePrice
+      }
+    }
+    """
 
-    df_data = json_data['data']['saleAuctions']
-    df = pd.DataFrame(df_data)
+    query_h = """query getHeroInfos($input: Int){
+      assistingAuctions(skip: $input first:1000 orderBy: endedAt orderDirection: desc 
+            where: {
+            open: false
+            purchasePrice_not: null
+          }
 
+
+            ) {
+        id
+        tokenId {
+          id
+          rarity
+          generation
+          mainClass
+          subClass
+          statBoost1
+          statBoost2
+          profession
+          summons
+          maxSummons
+        }
+        endedAt
+        purchasePrice
+      }
+    }
+    """
+
+    url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+
+    ####SOLD DATA####
+    if int(start_num) == 1:
+        data = []
+        dataLength = 0
+
+    while int(dataLength) < 2000:
+        v = {'input': int(dataLength)}
+        r = requests.post(url, json={"query": query, 'variables': v})
+        json_data = json.loads(r.text)
+
+        df_data = json_data['data']['saleAuctions']
+
+        newdata = pd.DataFrame(df_data)
+        dataLength += 1000
+        data.append(newdata)
+        # dataLength = len(data)
+
+    df = pd.concat(data).reset_index(drop=True)
     df2 = df['tokenId'].apply(pd.Series)
 
     df2 = pd.concat([df2, df['purchasePrice']], axis=1)
@@ -411,16 +379,26 @@ def clean_data(n):
     df2['timeStamp'] = utcTime
     df2 = df2.drop(['endedAt'], axis=1)
 
-    ###FILTER####
-
     # base data
     cleaned_df = df2.to_dict()
 
-    # update dataframe
-    r = requests.post(url, json={"query": query_h})
-    json_data = json.loads(r.text)
+    ####HIRED DATA####
+    if int(start_num) == 1:
+        data = []
+        dataLength = 0
 
-    df_data = json_data['data']['assistingAuctions']
+    while int(dataLength) < 2000:
+        v = {'input': int(dataLength)}
+        r = requests.post(url, json={"query": query_h, 'variables': v})
+        json_data = json.loads(r.text)
+
+        df_data = json_data['data']['assistingAuctions']
+
+        newdata = pd.DataFrame(df_data)
+        dataLength += 1000
+        data.append(newdata)
+        # dataLength = len(data)
+
     df = pd.DataFrame(df_data)
 
     df2 = df['tokenId'].apply(pd.Series)
@@ -470,7 +448,7 @@ def clean_data(n):
     df2['timeStamp'] = utcTime
     df2 = df2.drop(['endedAt'], axis=1)
 
-    ###FILTER####
+    ###FILTER###
 
     # base data
     cleaned_df2 = df2.to_dict()
@@ -481,6 +459,16 @@ def clean_data(n):
     }
 
     return json.dumps(datasets)
+
+
+# update timestamp
+@app.callback(
+    [Output("last_timestamp", "children")],
+    [Input("interval-component", "n_intervals")]
+)
+def update_timestamp(n):
+    currentTime = datetime.datetime.utcnow()
+    return ["Data last updated: {}.".format(currentTime)]
 
 
 @app.callback(
@@ -681,7 +669,7 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, n, js
         data = [trace1, trace2, trace3, trace4, trace5]
         newfig = go.Figure(data=data)
         newfig.update_traces(marker=dict(line=dict(width=.5)))
-        newfig.update_layout(title='Tavern Sales - Last 1000 Heroes Sold',
+        newfig.update_layout(title='Tavern Sales - Last 2000 Heroes Sold',
                              titlefont=dict(family='Arial', size=24),
                              xaxis=dict(showgrid=True, ticks='outside'),
                              xaxis_title='Date in UTC',
@@ -812,7 +800,7 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, n, js
         data = [trace1, trace2, trace3, trace4, trace5]
         newfig = go.Figure(data=data)
         newfig.update_traces(marker=dict(line=dict(width=.5)))
-        newfig.update_layout(title='Tavern Sales - Last 1000 Heroes Sold',
+        newfig.update_layout(title='Tavern Sales - Last 2000 Heroes Sold',
                              titlefont=dict(family='Arial', size=24),
                              xaxis=dict(showgrid=True, ticks='outside'),
                              xaxis_title='Date in UTC',
