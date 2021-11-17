@@ -58,7 +58,7 @@ app.layout = html.Div(
                         {'label': 'Heroes Hired', 'value': 'HeroesHired'}
 
                     ],
-                    value='',
+                    value='HeroesSold',
                     clearable=False,
                     searchable=False,
                     className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
