@@ -36,7 +36,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 
-PAGE_SIZE = 20
+PAGE_SIZE = 25
 
 app.layout = html.Div(
     children=[
@@ -281,40 +281,12 @@ def queryHeroes(n, start_num):
     }
     """
 
-    query_h = """query getHeroInfos($input: Int){
-      assistingAuctions(skip: $input first:1000 orderBy: endedAt orderDirection: desc 
-            where: {
-            open: false
-            purchasePrice_not: null
-          }
-
-
-            ) {
-        id
-        tokenId {
-          id
-          rarity
-          generation
-          mainClass
-          subClass
-          statBoost1
-          statBoost2
-          profession
-          summons
-          maxSummons
-        }
-        endedAt
-        purchasePrice
-      }
-    }
-    """
-
     url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
 
     ####SOLD DATA####
-    if int(start_num) == 1:
-        data = []
-        dataLength = 0
+    # if int(start_num) == 1:
+    data = []
+    dataLength = 0
 
     while int(dataLength) < 2000:
         v = {'input': int(dataLength)}
@@ -383,24 +355,52 @@ def queryHeroes(n, start_num):
     cleaned_df = df2.to_dict()
 
     ####HIRED DATA####
-    if int(start_num) == 1:
-        data = []
-        dataLength = 0
 
-    while int(dataLength) < 2000:
-        v = {'input': int(dataLength)}
-        r = requests.post(url, json={"query": query_h, 'variables': v})
-        json_data = json.loads(r.text)
+    query_h = """query getHeroInfos($input_h: Int){
+      assistingAuctions(skip: $input_h first:1000 orderBy: endedAt orderDirection: desc 
+            where: {
+            open: false
+            purchasePrice_not: null
+          }
+
+
+            ) {
+        id
+        tokenId {
+          id
+          rarity
+          generation
+          mainClass
+          subClass
+          statBoost1
+          statBoost2
+          profession
+          summons
+          maxSummons
+        }
+        endedAt
+        purchasePrice
+      }
+    }
+    """
+
+    # if int(start_num) == 1:
+    data_h = []
+    dataLength_h = 0
+
+    while int(dataLength_h) < 2000:
+        v_h = {'input_h': int(dataLength_h)}
+        r_h = requests.post(url, json={"query": query_h, 'variables': v_h})
+        json_data = json.loads(r_h.text)
 
         df_data = json_data['data']['assistingAuctions']
 
         newdata = pd.DataFrame(df_data)
-        dataLength += 1000
-        data.append(newdata)
+        dataLength_h += 1000
+        data_h.append(newdata)
         # dataLength = len(data)
 
-    df = pd.DataFrame(df_data)
-
+    df = pd.concat(data_h).reset_index(drop=True)
     df2 = df['tokenId'].apply(pd.Series)
 
     df2 = pd.concat([df2, df['purchasePrice']], axis=1)
