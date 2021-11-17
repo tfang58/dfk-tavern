@@ -34,9 +34,10 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # Embed the style to the dashabord:
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app.title = 'DFK-Tavern | Tavern Dashboards'
 server = app.server
 
-PAGE_SIZE = 25
+PAGE_SIZE = 20
 
 app.layout = html.Div(
     children=[
@@ -57,7 +58,7 @@ app.layout = html.Div(
                         {'label': 'Heroes Hired', 'value': 'HeroesHired'}
 
                     ],
-                    value='HeroesSold',
+                    value='',
                     clearable=False,
                     searchable=False,
                     className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
@@ -224,7 +225,6 @@ app.layout = html.Div(
                                       {"name": 'Summons Remaining', "id": 'summons'},
                                       {"name": 'Max Summons', "id": 'maxSummons'},
                                       {"name": 'Price', "id": 'soldPrice'},
-                                      # {"name": 'Timestamp', "id": 'Timestamp'},
                                       {"name": 'Timestamp', "id": 'timeStamp'}],
                              data=[],
                              page_current=0,
@@ -477,11 +477,11 @@ def update_timestamp(n):
      Input("prof-filter", "value"),
      Input("gen-slider", "value"),
      Input("summon-slider", "value"),
-     Input("interval-component", "n_intervals"),
+     # Input("interval-component", "n_intervals"),
      Input('intermediate-value', 'data'),
      Input('dash-selection', 'value')]
 )
-def update_tables(option_selected, prof_filter, gen_slider, summon_slider, n, jsonified_cleaned_data, value):
+def update_tables(option_selected, prof_filter, gen_slider, summon_slider, jsonified_cleaned_data, value):
     # go through each of the dropdowns and initialize a list if any of them are None
     if value == 'HeroesSold':
         datasets = json.loads(jsonified_cleaned_data)
@@ -546,11 +546,11 @@ def update_tables(option_selected, prof_filter, gen_slider, summon_slider, n, js
      Input("prof-filter", "value"),
      Input("gen-slider", "value"),
      Input("summon-slider", "value"),
-     Input("interval-component", "n_intervals"),
+     # Input("interval-component", "n_intervals"),
      Input('intermediate-value', 'data'),
      Input('dash-selection', 'value')]
 )
-def update_charts(option_selected, prof_filter, gen_slider, summon_slider, n, jsonified_cleaned_data, value):
+def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsonified_cleaned_data, value):
     if value == 'HeroesSold':
         datasets = json.loads(jsonified_cleaned_data)
         warrior = pd.DataFrame(datasets['cleaned_df'])
