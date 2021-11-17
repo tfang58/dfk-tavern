@@ -28,8 +28,8 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 init_notebook_mode(connected=True)
 cf.go_offline
 
-query = """query {
-  saleAuctions(first:1000 orderBy: endedAt orderDirection: desc 
+query = """query getData($input: Int!){
+  saleAuctions(skip: $input first:1000 orderBy: endedAt orderDirection: desc 
   		where: {
         open: false
         purchasePrice_not: null
@@ -55,6 +55,34 @@ query = """query {
   }
 }
 """
+
+# query = """query {
+#   saleAuctions(first:1000 orderBy: endedAt orderDirection: desc
+#   		where: {
+#         open: false
+#         purchasePrice_not: null
+#       }
+
+
+#   		) {
+#     id
+#     tokenId {
+#       id
+#       rarity
+#       generation
+#       mainClass
+#       subClass
+#       statBoost1
+#       statBoost2
+#       profession
+#       summons
+#       maxSummons
+#     }
+#   	endedAt
+#     purchasePrice
+#   }
+# }
+# """
 
 query_h = """query {
   assistingAuctions(first:1000 orderBy: endedAt orderDirection: desc 
@@ -84,8 +112,9 @@ query_h = """query {
 }
 """
 
-url = "https://graph.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
-r = requests.post(url, json={"query": query})
+variables = {'input': 0}
+url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+r = requests.post(url, json={"query": query, 'variables': variables})
 r_h = requests.post(url, json={"query": query_h})
 
 # if r.status_code == 200:
@@ -145,8 +174,8 @@ app.layout = html.Div(
             interval=30 * 60 * 1000,
             n_intervals=0),
 
+        dcc.Store(id='raw-data', data=[], storage_type='memory'),
         dcc.Store(id='intermediate-value', data=[], storage_type='memory'),
-        # dcc.Store(id='intermediate-value-h'),
 
         html.Div(
             children=[
@@ -326,7 +355,7 @@ def update_timestamp(n):
 )
 def clean_data(n):
     # update dataframe
-    r = requests.post(url, json={"query": query})
+    r = requests.post(url, json={"query": query, "variables": variables})
     json_data = json.loads(r.text)
 
     df_data = json_data['data']['saleAuctions']
