@@ -9,12 +9,11 @@ from app import server
 # Connect to your app pages
 from apps import taverndata, heroprice
 
-
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div([
         dcc.Link('Tavern Data |', href='/apps/taverndata'),
-        dcc.Link('Hero Price Checker', href='/apps/pricecheck'),
+        dcc.Link('Hero Price Checker', href='/apps/heroprice'),
     ], className="row"),
     html.Div(id='page-content', children=[])
 ])
@@ -25,11 +24,10 @@ app.layout = html.Div([
 def display_page(pathname):
     if pathname == '/apps/taverndata':
         return taverndata.layout
-    if pathname == '/apps/pricecheck':
+    if pathname == '/apps/heroprice':
         return heroprice.layout
     else:
         return taverndata.layout
-
 
 if __name__ == '__main__':
     app.run_server(debug=False)
