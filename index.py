@@ -9,6 +9,8 @@ from app import server
 # Connect to your app pages
 from apps import tavern, herocheck
 
+app.title = 'DFK-Tavern | Tavern Tools'
+
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div([
@@ -28,6 +30,5 @@ def display_page(pathname):
     else:
         return tavern.layout
 
-
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

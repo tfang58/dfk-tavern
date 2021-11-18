@@ -26,6 +26,8 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 init_notebook_mode(connected=True)
 cf.go_offline
 
+title = 'DFK-Tavern | Hero Price Check'
+
 PAGE_SIZE = 20
 
 layout = html.Div([
@@ -52,7 +54,11 @@ layout = html.Div([
         ], style={'display': 'none'}  # <-- This is the line that will be changed by the dropdown callback
         ),
 
+
+
         html.Div([
+            html.Div(
+                children="Hero ID"),
             # Create element to hide/show, in this case an 'Input Component'
             dcc.Input(
                 id='hero-num',
@@ -64,7 +70,10 @@ layout = html.Div([
             style={'padding': 10, "width": "20%"}
         ),
 
-        dcc.Store(id='raw-data', storage_type='session'),
+        dcc.Loading(children=[dcc.Store(id='raw-data', storage_type='session')], fullscreen=True,
+                    type='cube'),
+
+        # dcc.Store(id='raw-data', storage_type='session'),
         dcc.Store(id='hero-data', storage_type='session'),
 
         dash_table.DataTable(id='hero-table',
@@ -91,7 +100,7 @@ layout = html.Div([
 
         html.Div(
             children=[
-                html.Div(children='Tavern Filters', style={'fontSize': "14px"}, className='menu-title'),
+                html.Div(children='Tavern Filters (last 2000 heroes sold)', style={'fontSize': "14px"}, className='menu-title'),
                 dcc.Dropdown(
                     id='tavern-filter',
                     options=[
@@ -139,7 +148,7 @@ layout = html.Div([
                              ),
 
         ####BOTTOM TEXT####
-        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436",
+        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436 or !tip on Discord (tfang#7295)",
                  style={'fontSize': "12px", 'padding': 10}),
 
         ]

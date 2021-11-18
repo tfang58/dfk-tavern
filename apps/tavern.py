@@ -11,6 +11,8 @@ from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
 
+import dash_bootstrap_components as dbc
+
 import chart_studio.plotly as py
 import plotly.express as px
 import plotly.graph_objects as go
@@ -22,6 +24,8 @@ import matplotlib as mpl
 import seaborn as sns
 
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+
+title = 'DFK-Tavern | Tavern Data'
 
 PAGE_SIZE = 20
 
@@ -69,7 +73,8 @@ layout = html.Div([
             ], style={'display': 'none'}  # <-- This is the line that will be changed by the dropdown callback
             ),
 
-            dcc.Store(id='intermediate-value', storage_type='memory'),
+            dcc.Loading(children=[dcc.Store(id='intermediate-value', storage_type='session')], fullscreen=True, color="success",
+                        type='graph'),
             # dcc.Store(id='intermediate-value-h'),
 
             html.Div(
@@ -199,6 +204,7 @@ layout = html.Div([
             ),  # the dropdown function
 
             dcc.Loading(id='loading-graph', children=[html.Div(dcc.Graph(id='main-chart'))], type='default'),
+            # dbc.Spinner(id='loading-graph', children=[html.Div(dcc.Graph(id='main-chart'))]),
 
             dash_table.DataTable(id='main-table',
                                  columns=[{"name": 'ID', "id": 'id'},
@@ -225,7 +231,7 @@ layout = html.Div([
                                  ),
 
             ####BOTTOM TEXT####
-            html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436",
+            html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436 or !tip on Discord (tfang#7295)",
                      style={'fontSize': "12px", 'padding': 10}),
 
         ]
