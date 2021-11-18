@@ -27,7 +27,7 @@ def display_page(pathname):
     if pathname == '/apps/heroprice':
         return heroprice.layout
     else:
-        return taverdata.layout
+        return taverndata.layout
         #return "404 Page Error! Please choose a link"
 
 if __name__ == '__main__':
