@@ -19,11 +19,13 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib as mpl
 import seaborn as sns
+from app import app
 
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 
 init_notebook_mode(connected=True)
 cf.go_offline
+
 
 layout = html.Div(
     children=[
