@@ -1,3 +1,4 @@
+from app import app
 import time
 import datetime
 import requests
@@ -19,7 +20,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib as mpl
 import seaborn as sns
-from app import app
 
 # not needed for pycharm
 # %matplotlib inline
