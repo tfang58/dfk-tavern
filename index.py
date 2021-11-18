@@ -2,9 +2,9 @@ from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
 
-# Connect to main app.py file
-from app import app
-from app import server
+# Connect to main failedapp.py file
+from failedapp import app
+from failedapp import server
 
 # Connect to your app pages
 from apps import taverndata, heroprice

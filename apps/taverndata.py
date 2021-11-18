@@ -1,4 +1,4 @@
-from app import app
+from failedapp import app
 import time
 import datetime
 import requests
