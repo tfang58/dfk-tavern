@@ -12,8 +12,8 @@ from apps import taverndata, heroprice
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div([
-        dcc.Link('Tavern Data |', href='/apps/taverndata'),
-        dcc.Link('Hero Price Checker', href='/apps/heroprice'),
+        dcc.Link('Tavern Data |', href='/taverndata'),
+        dcc.Link(' Hero Price Checker', href='/heroprice'),
     ], className="row"),
     html.Div(id='page-content', children=[])
 ])
@@ -22,9 +22,9 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/apps/taverndata':
+    if pathname == '/taverndata':
         return taverndata.layout
-    if pathname == '/apps/heroprice':
+    if pathname == '/heroprice':
         return heroprice.layout
     else:
         return taverndata.layout

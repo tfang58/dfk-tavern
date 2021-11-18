@@ -31,7 +31,8 @@ cf.go_offline
 
 PAGE_SIZE = 20
 
-layout = html.Div(
+layout = html.Div([
+    html.Div(
     children=[
         html.H1(children="DeFi Kingdom Tavern Dashboards", ),
         html.Div(
@@ -234,7 +235,10 @@ layout = html.Div(
                  style={'fontSize': "12px", 'padding': 10}),
 
     ]
+    )
+]
 )
+
 
 
 # put raw data into storage
