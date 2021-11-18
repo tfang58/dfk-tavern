@@ -11,8 +11,6 @@ from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
 
-import dash_bootstrap_components as dbc
-
 import chart_studio.plotly as py
 import plotly.express as px
 import plotly.graph_objects as go
