@@ -29,6 +29,8 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 init_notebook_mode(connected=True)
 cf.go_offline
 
+PAGE_SIZE = 20
+
 layout = html.Div(
     children=[
         html.H1(children="DeFi Kingdom Tavern Dashboards", ),
