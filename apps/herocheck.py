@@ -67,7 +67,7 @@ layout = html.Div([
                 debounce=True,
             )
         ],
-            style={'padding': 10, "width": "20%"}
+            style={'padding': 20, "width": "20%"}
         ),
 
         dcc.Loading(children=[dcc.Store(id='raw-data', storage_type='session')], fullscreen=True,
@@ -118,9 +118,24 @@ layout = html.Div([
                     searchable=False,
                     className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
                 ),
+
+                dash_table.DataTable(id='stats-table',
+                                     columns=[{"name": 'Min', "id": 'min_price'},
+                                              {"name": 'Max', "id": 'max_price'},
+                                              {"name": 'Average', "id": 'average_price'},
+                                              {"name": 'Median', "id": 'median_price'}],
+                                     data=[],
+                                     style_as_list_view=True,
+                                     style_cell={'padding': '5px', 'textAlign': 'left', 'width': '25%'},
+                                     style_header={
+                                         'backgroundColor': 'white',
+                                         'fontWeight': 'bold'
+                                     },
+                                     ),
+
             ],
             className='menu',
-            style={'padding': 10, "width": "33%"}
+            style={'padding': 20, "width": "33%"}
         ),  # the dropdown function
 
         dash_table.DataTable(id='tavern-table',
@@ -204,6 +219,35 @@ def getTaverntable(sales_data, hero_data, tavern_filter):
 
         return sales_df.to_dict('records')
 
+
+@app.callback(
+    Output("stats-table", "data"),
+    Input("raw-data", "data"),
+    Input("hero-data", "data"),
+    Input("tavern-filter", "value"),
+)
+def getTaverntable(sales_data, hero_data, tavern_filter):
+    if tavern_filter is None:
+        pass
+    else:
+        sales_df = json.loads(sales_data)
+        sales_df = pd.DataFrame(sales_df)
+
+        hero_df = json.loads(hero_data)
+        hero_df = pd.DataFrame(hero_df)
+
+        for x in tavern_filter:
+            f_value = hero_df[x][0]
+            sales_df = sales_df[(sales_df[x] == f_value)]
+
+        stats_min = min(sales_df['soldPrice'])
+        stats_max = max(sales_df['soldPrice'])
+        stats_avg = sum(sales_df['soldPrice']) / len(sales_df['soldPrice'])
+        stats_med = sales_df['soldPrice'].median()
+        stats_list = {'min_price': stats_min, 'max_price': stats_max, 'average_price': stats_avg,
+                      'median_price': stats_med}
+
+        return [stats_list]
 
 @app.callback(
     Output("hero-data", "data"),
