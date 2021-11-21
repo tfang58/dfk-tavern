@@ -27,226 +27,235 @@ title = 'DFK-Tavern | Tavern Data'
 
 PAGE_SIZE = 20
 
-layout = html.Div([
-    html.Div(
-        children=[
-            html.H1(children="DeFi Kingdom Tavern Dashboards", ),
-            html.Div(
-                children="Random playground for various tavern dashboards."),
+layout = html.Div(
+    children=[
+        html.H1(children="DeFi Kingdom Tavern Dashboards", ),
+        html.Div(
+            children="Random playground for various tavern dashboards."),
 
-            html.Div(id='last_timestamp',
-                     children=[]),
+        html.Div(id='last_timestamp',
+                 children=[]),
 
-            html.Div(
-                children=[
-                    html.Div(children='Dashboard Selection', style={'fontSize': "14px"}, className='menu-title'),
-                    dcc.Dropdown(
-                        id='dash-selection',
-                        options=[
-                            {'label': 'Heroes Sold', 'value': 'HeroesSold'},
-                            {'label': 'Heroes Hired', 'value': 'HeroesHired'}
+        html.Div(
+            children=[
+                html.Div(children='Dashboard Selection', style={'fontSize': "14px"}, className='menu-title'),
+                dcc.Dropdown(
+                    id='dash-selection',
+                    options=[
+                        {'label': 'Heroes Sold', 'value': 'HeroesSold'},
+                        {'label': 'Heroes Hired', 'value': 'HeroesHired'}
 
-                        ],
-                        value='HeroesSold',
-                        clearable=False,
-                        searchable=False,
-                        className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
-                    ),
-                ],
-                className='menu',
-                style={'padding': 10, "width": "20%"}
-            ),  # the dropdown function
+                    ],
+                    value='HeroesSold',
+                    clearable=False,
+                    searchable=False,
+                    className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
+                ),
+            ],
+            className='menu',
+            style={'padding': 10, "width": "20%"}
+        ),  # the dropdown function
 
-            dcc.Interval(
-                id='interval-component',
-                interval=60 * 60 * 1000,
-                n_intervals=0),
+        html.Div(
+            children=[
+                dcc.Input(id='input-box', type="number", value=500, min=1, debounce=True),
+                html.Button('Get Tavern Data', id='button'),
+            ],
+            className='menu',
+            style={'padding': 10, "width": "20%"}
+        ),
 
-            html.Div([
-                # Create element to hide/show, in this case an 'Input Component'
-                dcc.Input(
-                    id='start-num',
-                    value='1',
-                )
-            ], style={'display': 'none'}  # <-- This is the line that will be changed by the dropdown callback
-            ),
+        dcc.Interval(
+            id='interval-component',
+            interval=60 * 60 * 1000,
+            n_intervals=0),
 
-            dcc.Loading(children=[dcc.Store(id='intermediate-value', storage_type='session')], fullscreen=True, color="success",
-                        type='graph'),
-            # dcc.Store(id='intermediate-value-h'),
+        html.Div([
+            # Create element to hide/show, in this case an 'Input Component'
+            dcc.Input(
+                id='start-num',
+                value='1',
+            )
+        ], style={'display': 'none'}  # <-- This is the line that will be changed by the dropdown callback
+        ),
 
-            html.Div(
-                children=[
-                    html.Div(children='Main Class', style={'fontSize': "14px"}, className='menu-title'),
-                    dcc.Dropdown(
-                        id='main-class',
-                        options=[
-                            {'label': 'Archer', 'value': 'Archer'},
-                            {'label': 'DarkKnight', 'value': 'DarkKnight'},
-                            {'label': 'Dragoon', 'value': 'Dragoon'},
-                            {'label': 'Knight', 'value': 'Knight'},
-                            {'label': 'Monk', 'value': 'Monk'},
-                            {'label': 'Ninja', 'value': 'Ninja'},
-                            {'label': 'Paladin', 'value': 'Paladin'},
-                            {'label': 'Pirate', 'value': 'Pirate'},
-                            {'label': 'Priest', 'value': 'Priest'},
-                            {'label': 'Sage', 'value': 'Sage'},
-                            {'label': 'Summoner', 'value': 'Summoner'},
-                            {'label': 'Thief', 'value': 'Thief'},
-                            {'label': 'Warrior', 'value': 'Warrior'},
-                            {'label': 'Wizard', 'value': 'Wizard'},
-                        ],
-                        clearable=True,
-                        searchable=False,
-                        className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
-                    ),
-                ],
-                className='menu',
-                style={'padding': 10, "width": "20%"}
-            ),  # the dropdown function
+        dcc.Loading(children=[dcc.Store(id='intermediate-value', storage_type='memory')], fullscreen=True,
+                    type='graph'),
+        # dcc.Store(id='intermediate-value-h'),
 
-            html.Div(
-                children=[
-                    html.Div(children='Profession', style={'fontSize': "14px"}, className='menu-title'),
-                    dcc.Dropdown(
-                        id='prof-filter',
-                        options=[
-                            {'label': 'Mining', 'value': 'mining'},
-                            {'label': 'Gardening', 'value': 'gardening'},
-                            {'label': 'Fishing', 'value': 'fishing'},
-                            {'label': 'Foraging', 'value': 'foraging'},
+        html.Div(
+            children=[
+                html.Div(children='Main Class', style={'fontSize': "14px"}, className='menu-title'),
+                dcc.Dropdown(
+                    id='main-class',
+                    options=[
+                        {'label': 'Archer', 'value': 'Archer'},
+                        {'label': 'DarkKnight', 'value': 'DarkKnight'},
+                        {'label': 'Dragoon', 'value': 'Dragoon'},
+                        {'label': 'DreadKnight', 'value': 'T1'},
+                        {'label': 'Knight', 'value': 'Knight'},
+                        {'label': 'Monk', 'value': 'Monk'},
+                        {'label': 'Ninja', 'value': 'Ninja'},
+                        {'label': 'Paladin', 'value': 'Paladin'},
+                        {'label': 'Pirate', 'value': 'Pirate'},
+                        {'label': 'Priest', 'value': 'Priest'},
+                        {'label': 'Sage', 'value': 'Sage'},
+                        {'label': 'Summoner', 'value': 'Summoner'},
+                        {'label': 'Thief', 'value': 'Thief'},
+                        {'label': 'Warrior', 'value': 'Warrior'},
+                        {'label': 'Wizard', 'value': 'Wizard'},
+                    ],
+                    clearable=True,
+                    searchable=False,
+                    className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
+                ),
+            ],
+            className='menu',
+            style={'padding': 10, "width": "20%"}
+        ),  # the dropdown function
 
-                        ],
-                        clearable=True,
-                        searchable=False,
-                        className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
-                    ),
-                ],
-                className='menu',
-                style={'padding': 10, "width": "20%"}
-            ),  # the dropdown function
+        html.Div(
+            children=[
+                html.Div(children='Profession', style={'fontSize': "14px"}, className='menu-title'),
+                dcc.Dropdown(
+                    id='prof-filter',
+                    options=[
+                        {'label': 'Mining', 'value': 'mining'},
+                        {'label': 'Gardening', 'value': 'gardening'},
+                        {'label': 'Fishing', 'value': 'fishing'},
+                        {'label': 'Foraging', 'value': 'foraging'},
 
-            html.Div(
-                children=[
-                    html.Div(children='Generation', style={'fontSize': "14px"}, className='menu-title'),
-                    dcc.RangeSlider(
-                        id='gen-slider',  # any name you'd like to give it
-                        marks={
-                            0: '0',  # key=position, value=what you see
-                            1: '1',
-                            2: '2',
-                            3: '3',
-                            4: '4',
-                            5: '5',
-                            6: '6',
-                            7: '7',
-                            8: '8',
-                            9: '9',
-                            10: '10',
-                            11: '11',
-                        },
-                        step=1,  # number of steps between values
-                        min=0,
-                        max=11,
-                        value=[0, 11],  # default value initially chosen
-                        dots=True,  # True, False - insert dots, only when step>1
-                        allowCross=False,  # True,False - Manage handle crossover
-                        disabled=False,  # True,False - disable handle
+                    ],
+                    clearable=True,
+                    searchable=False,
+                    className='dropdown', style={'fontSize': "12px", 'textAlign': 'left'},
+                ),
+            ],
+            className='menu',
+            style={'padding': 10, "width": "20%"}
+        ),  # the dropdown function
 
-                        className='None',
-                        tooltip={'always visible': False,  # show current slider values
-                                 'placement': 'bottom'},
+        html.Div(
+            children=[
+                html.Div(children='Generation', style={'fontSize': "14px"}, className='menu-title'),
+                dcc.RangeSlider(
+                    id='gen-slider',  # any name you'd like to give it
+                    marks={
+                        0: '0',  # key=position, value=what you see
+                        1: '1',
+                        2: '2',
+                        3: '3',
+                        4: '4',
+                        5: '5',
+                        6: '6',
+                        7: '7',
+                        8: '8',
+                        9: '9',
+                        10: '10',
+                        11: '11',
+                    },
+                    step=1,  # number of steps between values
+                    min=0,
+                    max=11,
+                    value=[0, 11],  # default value initially chosen
+                    dots=True,  # True, False - insert dots, only when step>1
+                    allowCross=False,  # True,False - Manage handle crossover
+                    disabled=False,  # True,False - disable handle
 
-                    ),
-                ],
-                className='menu',
-                style={'padding': 10}
-            ),  # the dropdown function
+                    className='None',
+                    tooltip={'always visible': False,  # show current slider values
+                             'placement': 'bottom'},
 
-            html.Div(
-                children=[
-                    html.Div(children='Summons Remaning (11 is used for Gen 0 Heroes)', style={'fontSize': "14px"},
-                             className='menu-title'),
-                    dcc.RangeSlider(
-                        id='summon-slider',  # any name you'd like to give it
-                        marks={
-                            0: '0',  # key=position, value=what you see
-                            1: '1',
-                            2: '2',
-                            3: '3',
-                            4: '4',
-                            5: '5',
-                            6: '6',
-                            7: '7',
-                            8: '8',
-                            9: '9',
-                            10: '10',
-                            11: '11',
-                        },
-                        step=1,  # number of steps between values
-                        min=0,
-                        max=11,
-                        value=[0, 11],  # default value initially chosen
-                        dots=True,  # True, False - insert dots, only when step>1
-                        allowCross=False,  # True,False - Manage handle crossover
-                        disabled=False,  # True,False - disable handle
+                ),
+            ],
+            className='menu',
+            style={'padding': 10}
+        ),  # the dropdown function
 
-                        className='None',
-                        tooltip={'always visible': False,  # show current slider values
-                                 'placement': 'bottom'},
+        html.Div(
+            children=[
+                html.Div(children='Summons Remaning (11 is used for Gen 0 Heroes)', style={'fontSize': "14px"},
+                         className='menu-title'),
+                dcc.RangeSlider(
+                    id='summon-slider',  # any name you'd like to give it
+                    marks={
+                        0: '0',  # key=position, value=what you see
+                        1: '1',
+                        2: '2',
+                        3: '3',
+                        4: '4',
+                        5: '5',
+                        6: '6',
+                        7: '7',
+                        8: '8',
+                        9: '9',
+                        10: '10',
+                        11: '11',
+                    },
+                    step=1,  # number of steps between values
+                    min=0,
+                    max=11,
+                    value=[0, 11],  # default value initially chosen
+                    dots=True,  # True, False - insert dots, only when step>1
+                    allowCross=False,  # True,False - Manage handle crossover
+                    disabled=False,  # True,False - disable handle
 
-                    ),
-                ],
-                className='menu',
-                style={'padding': 10}
-            ),  # the dropdown function
+                    className='None',
+                    tooltip={'always visible': False,  # show current slider values
+                             'placement': 'bottom'},
 
-            dcc.Loading(id='loading-graph', children=[html.Div(dcc.Graph(id='main-chart'))], type='default'),
-            # dbc.Spinner(id='loading-graph', children=[html.Div(dcc.Graph(id='main-chart'))]),
+                ),
+            ],
+            className='menu',
+            style={'padding': 10}
+        ),  # the dropdown function
 
-            dash_table.DataTable(id='main-table',
-                                 columns=[{"name": 'ID', "id": 'id'},
-                                          {"name": 'Rarity', "id": 'rarity'},
-                                          {"name": 'Generation', "id": 'generation'},
-                                          {"name": 'Main Class', "id": 'mainClass'},
-                                          {"name": 'Sub Class', "id": 'subClass'},
-                                          {"name": 'Primary Boost', "id": 'statBoost1'},
-                                          {"name": 'Secondary Boost', "id": 'statBoost2'},
-                                          {"name": 'Profession Boost', "id": 'profession'},
-                                          {"name": 'Summons Remaining', "id": 'summons'},
-                                          {"name": 'Max Summons', "id": 'maxSummons'},
-                                          {"name": 'Price', "id": 'soldPrice'},
-                                          {"name": 'Timestamp', "id": 'timeStamp'}],
-                                 data=[],
-                                 page_current=0,
-                                 page_size=PAGE_SIZE,
-                                 style_as_list_view=True,
-                                 style_cell={'padding': '5px', 'textAlign': 'left'},
-                                 style_header={
-                                     'backgroundColor': 'white',
-                                     'fontWeight': 'bold'
-                                 },
-                                 ),
+        dcc.Loading(id='loading-graph', children=[html.Div(dcc.Graph(id='main-chart'))], type='default'),
 
-            ####BOTTOM TEXT####
-            html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436 or !tip on Discord (tfang#7295)",
-                     style={'fontSize': "12px", 'padding': 10}),
+        dash_table.DataTable(id='main-table',
+                             columns=[{"name": 'ID', "id": 'id'},
+                                      {"name": 'Rarity', "id": 'rarity'},
+                                      {"name": 'Generation', "id": 'generation'},
+                                      {"name": 'Main Class', "id": 'mainClass'},
+                                      {"name": 'Sub Class', "id": 'subClass'},
+                                      {"name": 'Primary Boost', "id": 'statBoost1'},
+                                      {"name": 'Secondary Boost', "id": 'statBoost2'},
+                                      {"name": 'Profession Boost', "id": 'profession'},
+                                      {"name": 'Summons Remaining', "id": 'summons'},
+                                      {"name": 'Max Summons', "id": 'maxSummons'},
+                                      {"name": 'Price', "id": 'soldPrice'},
+                                      {"name": 'Timestamp', "id": 'timeStamp'}],
+                             data=[],
+                             page_current=0,
+                             page_size=PAGE_SIZE,
+                             style_as_list_view=True,
+                             style_cell={'padding': '5px', 'textAlign': 'left'},
+                             style_header={
+                                 'backgroundColor': 'white',
+                                 'fontWeight': 'bold'
+                             },
+                             ),
 
-        ]
-    )
-])
+        ####BOTTOM TEXT####
+        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436",
+                 style={'fontSize': "12px", 'padding': 10}),
+
+    ]
+)
 
 
 # put raw data into storage
 @app.callback(
     Output("intermediate-value", "data"),
-    Input("interval-component", "n_intervals"),
-    Input("start-num", "value")
+    Input("start-num", "value"),
+    Input("input-box", "value"),
+    Input("button", "n_clicks"),
+
 )
-def queryHeroes(n, start_num):
+def queryHeroes(start_num, q_value, n_clicks):
     ###QUERY AND URL####
-    query = """query getHeroInfos($input: Int){
-      saleAuctions(skip: $input first:1000 orderBy: endedAt orderDirection: desc 
+    query = """query getHeroInfos($input: Int, $f_input: Int){
+      saleAuctions(skip: $input first:$f_input orderBy: endedAt orderDirection: desc 
             where: {
             open: false
             purchasePrice_not: null
@@ -280,185 +289,190 @@ def queryHeroes(n, start_num):
     data = []
     dataLength = 0
 
-    while int(dataLength) < 2000:
-        v = {'input': int(dataLength)}
-        r = requests.post(url, json={"query": query, 'variables': v})
-        json_data = json.loads(r.text)
+    if q_value is None:
+        pass
+    else:
 
-        df_data = json_data['data']['saleAuctions']
+        while int(dataLength) < int(q_value):
+            v = {'input': int(dataLength), 'f_input': min(1000, int(q_value))}
+            r = requests.post(url, json={"query": query, 'variables': v})
+            json_data = json.loads(r.text)
 
-        newdata = pd.DataFrame(df_data)
-        dataLength += 1000
-        data.append(newdata)
-        # dataLength = len(data)
+            df_data = json_data['data']['saleAuctions']
 
-    df = pd.concat(data).reset_index(drop=True)
-    df2 = df['tokenId'].apply(pd.Series)
+            newdata = pd.DataFrame(df_data)
+            dataLength += 1000
+            data.append(newdata)
+            # dataLength = len(data)
 
-    df2 = pd.concat([df2, df['purchasePrice']], axis=1)
-    df2 = pd.concat([df2, df['endedAt']], axis=1)
+        df = pd.concat(data).reset_index(drop=True)
+        df2 = df['tokenId'].apply(pd.Series)
 
-    cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession', 'summons',
-            'maxSummons', 'purchasePrice', 'endedAt']
+        df2 = pd.concat([df2, df['purchasePrice']], axis=1)
+        df2 = pd.concat([df2, df['endedAt']], axis=1)
 
-    df2 = df2.reindex(columns=cols)
+        cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession',
+                'summons',
+                'maxSummons', 'purchasePrice', 'endedAt']
 
-    df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
+        df2 = df2.reindex(columns=cols)
 
-    # drop empty values from purchasePrice
-    df2.dropna(subset=['purchasePrice'])
+        df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
 
-    # reverse summons so it shows summons remaining instead of used
-    df2['summons'] = df2.apply(lambda x: 11 if x['generation'] == 0 else x['maxSummons'] - x['summons'], axis=1)
+        # drop empty values from purchasePrice
+        df2.dropna(subset=['purchasePrice'])
 
-    soldPrice = []
+        # reverse summons so it shows summons remaining instead of used
+        df2['summons'] = df2.apply(lambda x: 11 if x['generation'] == 0 else x['maxSummons'] - x['summons'], axis=1)
 
-    for x in df['purchasePrice']:
-        for y in x:
-            priceLen = len(x) - 16
-        x = x[: priceLen]
-        x = int(float(x)) / 100
-        soldPrice.append(x)
+        soldPrice = []
 
-    df2['soldPrice'] = soldPrice
-    df2 = df2.drop(['purchasePrice'], axis=1)
+        for x in df['purchasePrice']:
+            for y in x:
+                priceLen = len(x) - 16
+            x = x[: priceLen]
+            x = int(float(x)) / 100
+            soldPrice.append(x)
 
-    # change 'generation' to string for hover tooltip on main graph
-    genstr = []
+        df2['soldPrice'] = soldPrice
+        df2 = df2.drop(['purchasePrice'], axis=1)
 
-    for x in df2['generation']:
-        x = str(x)
-        genstr.append(x)
+        # change 'generation' to string for hover tooltip on main graph
+        genstr = []
 
-    df2['generationStr'] = genstr
+        for x in df2['generation']:
+            x = str(x)
+            genstr.append(x)
 
-    utcTime = []
+        df2['generationStr'] = genstr
 
-    for x in df['endedAt']:
-        x = int(x)
-        x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
-        utcTime.append(x)
-        # print(utcTime)
+        utcTime = []
 
-    df2['timeStamp'] = utcTime
-    df2 = df2.drop(['endedAt'], axis=1)
+        for x in df['endedAt']:
+            x = int(x)
+            x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+            utcTime.append(x)
+            # print(utcTime)
 
-    # base data
-    cleaned_df = df2.to_dict()
+        df2['timeStamp'] = utcTime
+        df2 = df2.drop(['endedAt'], axis=1)
 
-    ####HIRED DATA####
+        # base data
+        cleaned_df = df2.to_dict()
 
-    query_h = """query getHeroInfos($input_h: Int){
-      assistingAuctions(skip: $input_h first:1000 orderBy: endedAt orderDirection: desc 
-            where: {
-            open: false
-            purchasePrice_not: null
+        ####HIRED DATA####
+
+        query_h = """query getHeroInfos($input_h: Int, $f_input_h: Int){
+          assistingAuctions(skip: $input_h first: $f_input_h, orderBy: endedAt orderDirection: desc 
+                where: {
+                open: false
+                purchasePrice_not: null
+              }
+
+
+                ) {
+            id
+            tokenId {
+              id
+              rarity
+              generation
+              mainClass
+              subClass
+              statBoost1
+              statBoost2
+              profession
+              summons
+              maxSummons
+            }
+            endedAt
+            purchasePrice
           }
-
-
-            ) {
-        id
-        tokenId {
-          id
-          rarity
-          generation
-          mainClass
-          subClass
-          statBoost1
-          statBoost2
-          profession
-          summons
-          maxSummons
         }
-        endedAt
-        purchasePrice
-      }
-    }
-    """
+        """
 
-    # if int(start_num) == 1:
-    data_h = []
-    dataLength_h = 0
+        # if int(start_num) == 1:
+        data_h = []
+        dataLength_h = 0
 
-    while int(dataLength_h) < 2000:
-        v_h = {'input_h': int(dataLength_h)}
-        r_h = requests.post(url, json={"query": query_h, 'variables': v_h})
-        json_data = json.loads(r_h.text)
+        while int(dataLength_h) < int(q_value):
+            v_h = {'input_h': int(dataLength_h), 'f_input_h': min(1000, int(q_value))}
+            r_h = requests.post(url, json={"query": query_h, 'variables': v_h})
+            json_data = json.loads(r_h.text)
 
-        df_data = json_data['data']['assistingAuctions']
+            df_data = json_data['data']['assistingAuctions']
 
-        newdata = pd.DataFrame(df_data)
-        dataLength_h += 1000
-        data_h.append(newdata)
-        # dataLength = len(data)
+            newdata = pd.DataFrame(df_data)
+            dataLength_h += 1000
+            data_h.append(newdata)
+            # dataLength = len(data)
 
-    df = pd.concat(data_h).reset_index(drop=True)
-    df2 = df['tokenId'].apply(pd.Series)
+        df = pd.concat(data_h).reset_index(drop=True)
+        df2 = df['tokenId'].apply(pd.Series)
 
-    df2 = pd.concat([df2, df['purchasePrice']], axis=1)
-    df2 = pd.concat([df2, df['endedAt']], axis=1)
+        df2 = pd.concat([df2, df['purchasePrice']], axis=1)
+        df2 = pd.concat([df2, df['endedAt']], axis=1)
 
-    df2 = df2.reindex(columns=cols)
+        df2 = df2.reindex(columns=cols)
 
-    df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
+        df2['rarity'] = df2['rarity'].replace([0, 1, 2, 3, 4], ['common', 'uncommon', 'rare', 'legendary', 'mythic'])
 
-    # drop empty values from purchasePrice
-    df2.dropna(subset=['purchasePrice'])
+        # drop empty values from purchasePrice
+        df2.dropna(subset=['purchasePrice'])
 
-    # reverse summons so it shows summons remaining instead of used
-    df2['summons'] = df2.apply(lambda x: 11 if x['generation'] == 0 else x['maxSummons'] - x['summons'], axis=1)
+        # reverse summons so it shows summons remaining instead of used
+        df2['summons'] = df2.apply(lambda x: 11 if x['generation'] == 0 else x['maxSummons'] - x['summons'], axis=1)
 
-    soldPrice = []
+        soldPrice = []
 
-    for x in df['purchasePrice']:
-        for y in x:
-            priceLen = len(x) - 16
-        x = x[: priceLen]
-        x = int(float(x)) / 100
-        soldPrice.append(x)
+        for x in df['purchasePrice']:
+            for y in x:
+                priceLen = len(x) - 16
+            x = x[: priceLen]
+            x = int(float(x)) / 100
+            soldPrice.append(x)
 
-    df2['soldPrice'] = soldPrice
-    df2 = df2.drop(['purchasePrice'], axis=1)
+        df2['soldPrice'] = soldPrice
+        df2 = df2.drop(['purchasePrice'], axis=1)
 
-    # change 'generation' to string for hover tooltip on main graph
-    genstr = []
+        # change 'generation' to string for hover tooltip on main graph
+        genstr = []
 
-    for x in df2['generation']:
-        x = str(x)
-        genstr.append(x)
+        for x in df2['generation']:
+            x = str(x)
+            genstr.append(x)
 
-    df2['generationStr'] = genstr
+        df2['generationStr'] = genstr
 
-    utcTime = []
+        utcTime = []
 
-    for x in df['endedAt']:
-        x = int(x)
-        x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
-        utcTime.append(x)
-        # print(utcTime)
+        for x in df['endedAt']:
+            x = int(x)
+            x = datetime.datetime.fromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+            utcTime.append(x)
+            # print(utcTime)
 
-    df2['timeStamp'] = utcTime
-    df2 = df2.drop(['endedAt'], axis=1)
+        df2['timeStamp'] = utcTime
+        df2 = df2.drop(['endedAt'], axis=1)
 
-    ###FILTER###
+        ###FILTER###
 
-    # base data
-    cleaned_df2 = df2.to_dict()
+        # base data
+        cleaned_df2 = df2.to_dict()
 
-    datasets = {
-        'cleaned_df': cleaned_df,
-        'cleaned_df2': cleaned_df2
-    }
+        datasets = {
+            'cleaned_df': cleaned_df,
+            'cleaned_df2': cleaned_df2
+        }
 
-    return json.dumps(datasets)
+        return json.dumps(datasets)
 
 
 # update timestamp
 @app.callback(
     [Output("last_timestamp", "children")],
-    [Input("interval-component", "n_intervals")]
+    [Input("button", "n_clicks")]
 )
-def update_timestamp(n):
+def update_timestamp(n_clicks):
     currentTime = datetime.datetime.utcnow()
     return ["Data last updated: {}.".format(currentTime)]
 
@@ -538,11 +552,11 @@ def update_tables(option_selected, prof_filter, gen_slider, summon_slider, jsoni
      Input("prof-filter", "value"),
      Input("gen-slider", "value"),
      Input("summon-slider", "value"),
-     # Input("interval-component", "n_intervals"),
      Input('intermediate-value', 'data'),
-     Input('dash-selection', 'value')]
+     Input('dash-selection', 'value'),
+     Input('input-box', 'value')]
 )
-def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsonified_cleaned_data, value):
+def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsonified_cleaned_data, value, q_value):
     if value == 'HeroesSold':
         datasets = json.loads(jsonified_cleaned_data)
         warrior = pd.DataFrame(datasets['cleaned_df'])
@@ -661,7 +675,7 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
         data = [trace1, trace2, trace3, trace4, trace5]
         newfig = go.Figure(data=data)
         newfig.update_traces(marker=dict(line=dict(width=.5)))
-        newfig.update_layout(title='Tavern Sales - Last 2000 Heroes Sold',
+        newfig.update_layout(title='Tavern Sales - Last ' + str(q_value) + ' Heroes Sold',
                              titlefont=dict(family='Arial', size=24),
                              xaxis=dict(showgrid=True, ticks='outside'),
                              xaxis_title='Date in UTC',
@@ -792,7 +806,7 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
         data = [trace1, trace2, trace3, trace4, trace5]
         newfig = go.Figure(data=data)
         newfig.update_traces(marker=dict(line=dict(width=.5)))
-        newfig.update_layout(title='Tavern Sales - Last 2000 Heroes Hired',
+        newfig.update_layout(title='Tavern Sales - Last ' + str(q_value) + ' Heroes Hired',
                              titlefont=dict(family='Arial', size=24),
                              xaxis=dict(showgrid=True, ticks='outside'),
                              xaxis_title='Date in UTC',

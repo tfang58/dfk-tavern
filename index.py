@@ -20,6 +20,7 @@ app.layout = html.Div([
     html.Div(id='page-content')
 ])
 
+
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
@@ -30,5 +31,6 @@ def display_page(pathname):
     else:
         return tavern.layout
 
+
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

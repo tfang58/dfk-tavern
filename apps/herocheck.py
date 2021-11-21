@@ -100,7 +100,8 @@ layout = html.Div([
 
         html.Div(
             children=[
-                html.Div(children='Tavern Filters (last 2000 heroes sold)', style={'fontSize': "14px"}, className='menu-title'),
+                html.Div(children='Tavern Filters (last 2000 heroes sold)', style={'fontSize': "14px"},
+                         className='menu-title'),
                 dcc.Dropdown(
                     id='tavern-filter',
                     options=[
@@ -177,8 +178,8 @@ layout = html.Div([
     [Input("interval-component", "n_intervals")]
 )
 def update_timestamp(n):
-    currentTime = datetime.datetime.utcnow()
-    return ["Data last updated: {}.".format(currentTime)]
+    current_time = datetime.datetime.utcnow()
+    return ["Data last updated: {}.".format(current_time)]
 
 
 @app.callback(
