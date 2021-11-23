@@ -27,6 +27,7 @@ title = 'DFK-Tavern | Tavern Data'
 
 PAGE_SIZE = 20
 
+
 layout = html.Div(
     children=[
         html.H1(children="DeFi Kingdom Tavern Dashboards", ),
@@ -163,8 +164,7 @@ layout = html.Div(
                     disabled=False,  # True,False - disable handle
 
                     className='None',
-                    tooltip={'always visible': False,  # show current slider values
-                             'placement': 'bottom'},
+                    tooltip={'placement': 'bottom'},
 
                 ),
             ],
@@ -201,8 +201,7 @@ layout = html.Div(
                     disabled=False,  # True,False - disable handle
 
                     className='None',
-                    tooltip={'always visible': False,  # show current slider values
-                             'placement': 'bottom'},
+                    tooltip={'placement': 'bottom'},
 
                 ),
             ],
@@ -237,12 +236,11 @@ layout = html.Div(
                              ),
 
         ####BOTTOM TEXT####
-        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436",
+        html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436 or !tip on Discord (tfang#7295)",
                  style={'fontSize': "12px", 'padding': 10}),
 
     ]
 )
-
 
 # put raw data into storage
 @app.callback(
