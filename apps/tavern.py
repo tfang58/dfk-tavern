@@ -27,7 +27,6 @@ title = 'DFK-Tavern | Tavern Data'
 
 PAGE_SIZE = 20
 
-
 layout = html.Div(
     children=[
         html.H1(children="DeFi Kingdom Tavern Dashboards", ),
@@ -164,7 +163,8 @@ layout = html.Div(
                     disabled=False,  # True,False - disable handle
 
                     className='None',
-                    tooltip={'placement': 'bottom'},
+                    tooltip={'always visible': False,  # show current slider values
+                             'placement': 'bottom'},
 
                 ),
             ],
@@ -201,7 +201,8 @@ layout = html.Div(
                     disabled=False,  # True,False - disable handle
 
                     className='None',
-                    tooltip={'placement': 'bottom'},
+                    tooltip={'always visible': False,  # show current slider values
+                             'placement': 'bottom'},
 
                 ),
             ],
@@ -242,57 +243,61 @@ layout = html.Div(
     ]
 )
 
+
 # put raw data into storage
 @app.callback(
     Output("intermediate-value", "data"),
     Input("start-num", "value"),
     Input("input-box", "value"),
     Input("button", "n_clicks"),
-
 )
 def queryHeroes(start_num, q_value, n_clicks):
-    ###QUERY AND URL####
-    query = """query getHeroInfos($input: Int, $f_input: Int){
-      saleAuctions(skip: $input first:$f_input orderBy: endedAt orderDirection: desc 
-            where: {
-            open: false
-            purchasePrice_not: null
-          }
-
-
-            ) {
-        id
-        tokenId {
-          id
-          rarity
-          generation
-          mainClass
-          subClass
-          statBoost1
-          statBoost2
-          profession
-          summons
-          maxSummons
-        }
-        endedAt
-        purchasePrice
-      }
-    }
-    """
-
-    url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
-
-    ####SOLD DATA####
-    # if int(start_num) == 1:
-    data = []
-    dataLength = 0
 
     if q_value is None:
         pass
     else:
 
-        while int(dataLength) < int(q_value):
-            v = {'input': int(dataLength), 'f_input': min(1000, int(q_value))}
+        ####SOLD DATA####
+        # if int(start_num) == 1:
+        data = []
+        dataLength = 0
+        datastop = q_value
+        newq_value = q_value
+
+        datastop_h = q_value
+        newq_value_h = q_value
+
+        ###QUERY AND URL####
+        query = """query getHeroInfos($input: Int, $f_input: Int){
+          saleAuctions(skip: $input first:$f_input orderBy: endedAt orderDirection: desc 
+                where: {
+                open: false
+                purchasePrice_not: null
+              }
+                ) {
+            id
+            tokenId {
+              id
+              rarity
+              generation
+              mainClass
+              subClass
+              statBoost1
+              statBoost2
+              profession
+              summons
+              maxSummons
+            }
+            endedAt
+            purchasePrice
+          }
+        }
+        """
+
+        url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+
+        while int(dataLength) < int(datastop):
+            v = {'input': int(dataLength), 'f_input': min(newq_value, 1000)}
             r = requests.post(url, json={"query": query, 'variables': v})
             json_data = json.loads(r.text)
 
@@ -300,6 +305,7 @@ def queryHeroes(start_num, q_value, n_clicks):
 
             newdata = pd.DataFrame(df_data)
             dataLength += 1000
+            newq_value = newq_value - 1000
             data.append(newdata)
             # dataLength = len(data)
 
@@ -366,8 +372,6 @@ def queryHeroes(start_num, q_value, n_clicks):
                 open: false
                 purchasePrice_not: null
               }
-
-
                 ) {
             id
             tokenId {
@@ -392,8 +396,9 @@ def queryHeroes(start_num, q_value, n_clicks):
         data_h = []
         dataLength_h = 0
 
-        while int(dataLength_h) < int(q_value):
-            v_h = {'input_h': int(dataLength_h), 'f_input_h': min(1000, int(q_value))}
+
+        while int(dataLength_h) < int(datastop_h):
+            v_h = {'input_h': int(dataLength_h), 'f_input_h': min(1000, int(newq_value_h))}
             r_h = requests.post(url, json={"query": query_h, 'variables': v_h})
             json_data = json.loads(r_h.text)
 
@@ -401,6 +406,7 @@ def queryHeroes(start_num, q_value, n_clicks):
 
             newdata = pd.DataFrame(df_data)
             dataLength_h += 1000
+            newq_value_h = newq_value_h - 1000
             data_h.append(newdata)
             # dataLength = len(data)
 
