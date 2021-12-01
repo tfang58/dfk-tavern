@@ -11,6 +11,9 @@ from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
 
+import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
+
 import chart_studio.plotly as py
 import plotly.express as px
 import plotly.graph_objects as go
@@ -81,7 +84,7 @@ layout = html.Div(
 
         dcc.Loading(children=[dcc.Store(id='intermediate-value', storage_type='memory')], fullscreen=True,
                     type='graph'),
-        # dcc.Store(id='intermediate-value-h'),
+        dcc.Store(id='excel-storage', storage_type='memory'),
 
         html.Div(
             children=[
@@ -163,7 +166,7 @@ layout = html.Div(
                     disabled=False,  # True,False - disable handle
 
                     className='None',
-                    tooltip={'always visible': False,  # show current slider values
+                    tooltip={'always_visible': False,  # show current slider values
                              'placement': 'bottom'},
 
                 ),
@@ -201,7 +204,7 @@ layout = html.Div(
                     disabled=False,  # True,False - disable handle
 
                     className='None',
-                    tooltip={'always visible': False,  # show current slider values
+                    tooltip={'always_visible': False,  # show current slider values
                              'placement': 'bottom'},
 
                 ),
@@ -235,6 +238,18 @@ layout = html.Div(
                                  'fontWeight': 'bold'
                              },
                              ),
+
+        html.Div(
+            children=[dbc.Button(id='dl-button',
+                   children=["Export to Excel"],
+                   color="info",
+                   className="mt-1"
+                   )
+                  ],
+                 style={"textAlign": "right", 'padding': 10}
+             ),
+
+        dcc.Download(id="download-component"),
 
         ####BOTTOM TEXT####
         html.Div(children="Tip jar: 0x71C52444b34fb9d99b3F3E0bD29084ba0EEe0436 or !tip on Discord (tfang#7295)",
@@ -480,14 +495,38 @@ def update_timestamp(n_clicks):
     currentTime = datetime.datetime.utcnow()
     return ["Data last updated: {}.".format(currentTime)]
 
+# Excel download
+@app.callback(
+    Output("download-component", "data"),
+    [Input("dl-button", "n_clicks"),
+     Input("excel-storage", "data")],
+    prevent_initial_call=True,
+)
+
+def export_excel(n_clicks, excel_df):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        button_id = ""
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    if button_id == "dl-button":
+        excel_clean = json.loads(excel_df)
+        excel_export = pd.DataFrame(excel_clean)
+        print(n_clicks)
+
+        return dcc.send_data_frame(excel_export.to_excel, "Tavern Data.xlsx", sheet_name="Tavern Data", index=False)
+    else:
+        raise PreventUpdate
+
 
 @app.callback(
-    [Output("main-table", "data")],
+    [Output("main-table", "data"),
+     Output("excel-storage", "data")],
     [Input("main-class", "value"),
      Input("prof-filter", "value"),
      Input("gen-slider", "value"),
      Input("summon-slider", "value"),
-     # Input("interval-component", "n_intervals"),
      Input('intermediate-value', 'data'),
      Input('dash-selection', 'value')]
 )
@@ -519,7 +558,7 @@ def update_tables(option_selected, prof_filter, gen_slider, summon_slider, jsoni
             & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
         filtered_df = filtered_df.drop(['generationStr'], axis=1)
 
-        return [filtered_df.to_dict('records')]
+        return filtered_df.to_dict('records'), json.dumps(filtered_df.to_dict('records'))
 
     if value == 'HeroesHired':
         datasets = json.loads(jsonified_cleaned_data)
@@ -547,7 +586,7 @@ def update_tables(option_selected, prof_filter, gen_slider, summon_slider, jsoni
             & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
         filtered_df = filtered_df.drop(['generationStr'], axis=1)
 
-        return [filtered_df.to_dict('records')]
+        return filtered_df.to_dict('records'), json.dumps(filtered_df.to_dict('records'))
 
 
 @app.callback(
