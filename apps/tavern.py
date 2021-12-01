@@ -515,7 +515,7 @@ def export_excel(n_clicks, excel_df):
         excel_export = pd.DataFrame(excel_clean)
         print(n_clicks)
 
-        return dcc.send_data_frame(excel_export.to_excel, "Tavern Data.xlsx", sheet_name="Tavern Data", index=False)
+        return dcc.send_data_frame(excel_export.to_excel, "Tavern Data.xlsx", sheet_name="Tavern Data",  index=False)
     else:
         raise PreventUpdate
 
