@@ -309,7 +309,8 @@ def queryHeroes(start_num, q_value, n_clicks):
         }
         """
 
-        url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+        url = "https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql"
+        #url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
 
         while int(dataLength) < int(datastop):
             v = {'input': int(dataLength), 'f_input': min(newq_value, 1000)}
