@@ -280,8 +280,8 @@ def queryHeroesdata(hero_num):
     }
         """
 
-        url = "https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql"
-        #url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
+        # url = "https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql"
+        url = "http://graph3.defikingdoms.com/subgraphs/name/defikingdoms/apiv5"
         v = {'input': int(hero_num)}
         r = requests.post(url, json={"query": query, 'variables': v})
 
