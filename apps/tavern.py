@@ -219,6 +219,7 @@ layout = html.Div(
                              columns=[{"name": 'ID', "id": 'id'},
                                       {"name": 'Rarity', "id": 'rarity'},
                                       {"name": 'Generation', "id": 'generation'},
+                                      {"name": 'Level', "id": 'level'},
                                       {"name": 'Main Class', "id": 'mainClass'},
                                       {"name": 'Sub Class', "id": 'subClass'},
                                       {"name": 'Primary Boost', "id": 'statBoost1'},
@@ -295,6 +296,7 @@ def queryHeroes(start_num, q_value, n_clicks):
               id
               rarity
               generation
+              level
               mainClass
               subClass
               statBoost1
@@ -331,7 +333,7 @@ def queryHeroes(start_num, q_value, n_clicks):
         df2 = pd.concat([df2, df['purchasePrice']], axis=1)
         df2 = pd.concat([df2, df['endedAt']], axis=1)
 
-        cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession',
+        cols = ['id', 'rarity', 'generation', 'level', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession',
                 'summons',
                 'maxSummons', 'purchasePrice', 'endedAt']
 
@@ -366,6 +368,15 @@ def queryHeroes(start_num, q_value, n_clicks):
 
         df2['generationStr'] = genstr
 
+        # change 'level' to string for hover tooltip on main graph
+        levelstr = []
+
+        for x in df2['level']:
+            x = str(x)
+            levelstr.append(x)
+
+        df2['levelStr'] = levelstr
+
         utcTime = []
 
         for x in df['endedAt']:
@@ -394,6 +405,7 @@ def queryHeroes(start_num, q_value, n_clicks):
               id
               rarity
               generation
+              level
               mainClass
               subClass
               statBoost1
@@ -462,6 +474,15 @@ def queryHeroes(start_num, q_value, n_clicks):
             genstr.append(x)
 
         df2['generationStr'] = genstr
+
+        # change 'level' to string for hover tooltip on main graph
+        levelstr = []
+
+        for x in df2['level']:
+            x = str(x)
+            levelstr.append(x)
+
+        df2['levelStr'] = levelstr
 
         utcTime = []
 
@@ -557,7 +578,7 @@ def update_tables(option_selected, prof_filter, gen_slider, summon_slider, jsoni
         filtered_df = filtered_df[
             (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])
             & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
-        filtered_df = filtered_df.drop(['generationStr'], axis=1)
+        filtered_df = filtered_df.drop(['generationStr', 'levelStr'], axis=1)
 
         return filtered_df.to_dict('records'), json.dumps(filtered_df.to_dict('records'))
 
@@ -585,7 +606,7 @@ def update_tables(option_selected, prof_filter, gen_slider, summon_slider, jsoni
         filtered_df = filtered_df[
             (filtered_df['generation'] >= gen_slider[0]) & (filtered_df['generation'] <= gen_slider[1])
             & (filtered_df['summons'] >= summon_slider[0]) & (filtered_df['summons'] <= summon_slider[1])]
-        filtered_df = filtered_df.drop(['generationStr'], axis=1)
+        filtered_df = filtered_df.drop(['generationStr', 'levelStr'], axis=1)
 
         return filtered_df.to_dict('records'), json.dumps(filtered_df.to_dict('records'))
 
@@ -642,7 +663,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataC['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataC['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataC['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataC['generationStr'] + '<br>'
+                                 '<b>Level</b>: ' + filtered_dataC['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataC['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataC['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataC['statBoost1'] + '<br>' +
@@ -659,7 +681,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataU['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataU['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataU['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataU['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataU['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataU['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataU['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataU['statBoost1'] + '<br>' +
@@ -675,7 +698,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataR['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataR['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataR['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataR['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataR['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataR['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataR['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataR['statBoost1'] + '<br>' +
@@ -691,7 +715,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataL['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataL['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataL['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataL['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataL['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataL['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataL['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataL['statBoost1'] + '<br>' +
@@ -707,7 +732,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataM['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataM['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataM['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataM['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataM['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataM['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataM['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataM['statBoost1'] + '<br>' +
@@ -773,7 +799,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataC['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataC['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataC['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataC['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataC['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataC['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataC['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataC['statBoost1'] + '<br>' +
@@ -790,7 +817,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataU['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataU['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataU['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataU['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataU['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataU['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataU['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataU['statBoost1'] + '<br>' +
@@ -806,7 +834,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataR['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataR['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataR['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataR['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataR['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataR['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataR['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataR['statBoost1'] + '<br>' +
@@ -822,7 +851,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataL['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataL['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataL['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataL['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataL['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataL['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataL['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataL['statBoost1'] + '<br>' +
@@ -838,7 +868,8 @@ def update_charts(option_selected, prof_filter, gen_slider, summon_slider, jsoni
                             '<br><b>Sold At</b>: %{x} UTC<br><extra></extra>',
                             text=filtered_dataM['id'] + '<br>' +
                                  '<b>Rarity</b>: ' + filtered_dataM['rarity'] + '<br>' +
-                                 '<b>Generation</b>: ' + filtered_dataM['generationStr'] + '<br>' + '<br>' +
+                                 '<b>Generation</b>: ' + filtered_dataM['generationStr'] + '<br>' +
+                                 '<b>Level</b>: ' + filtered_dataM['levelStr'] + '<br>' + '<br>' +
                                  '<b>Main Class</b>: ' + filtered_dataM['mainClass'] + '<br>' +
                                  '<b>Sub Class</b>: ' + filtered_dataM['subClass'] + '<br>' +
                                  '<b>Primary Boost</b>: ' + filtered_dataM['statBoost1'] + '<br>' +

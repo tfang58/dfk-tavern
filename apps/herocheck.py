@@ -80,6 +80,7 @@ layout = html.Div([
                              columns=[{"name": 'ID', "id": 'id'},
                                       {"name": 'Rarity', "id": 'rarity'},
                                       {"name": 'Generation', "id": 'generation'},
+                                      {"name": 'Level', "id": 'level'},
                                       {"name": 'Main Class', "id": 'mainClass'},
                                       {"name": 'Sub Class', "id": 'subClass'},
                                       {"name": 'Primary Boost', "id": 'statBoost1'},
@@ -107,6 +108,7 @@ layout = html.Div([
                     options=[
                         {"label": 'Rarity', "value": 'rarity'},
                         {"label": 'Generation', "value": 'generation'},
+                        {"label": 'Level', "value": 'level'},
                         {"label": 'Main Class', "value": 'mainClass'},
                         {"label": 'Sub Class', "value": 'subClass'},
                         {"label": 'Primary Boost', "value": 'statBoost1'},
@@ -143,6 +145,7 @@ layout = html.Div([
                              columns=[{"name": 'ID', "id": 'id'},
                                       {"name": 'Rarity', "id": 'rarity'},
                                       {"name": 'Generation', "id": 'generation'},
+                                      {"name": 'Level', "id": 'level'},
                                       {"name": 'Main Class', "id": 'mainClass'},
                                       {"name": 'Sub Class', "id": 'subClass'},
                                       {"name": 'Primary Boost', "id": 'statBoost1'},
@@ -269,6 +272,7 @@ def queryHeroesdata(hero_num):
               id
               rarity
               generation
+              level
               mainClass
               subClass
               statBoost1
@@ -289,7 +293,7 @@ def queryHeroesdata(hero_num):
         df_data = json_data['data']
         df = pd.DataFrame(df_data).transpose()
 
-        cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession',
+        cols = ['id', 'rarity', 'generation', 'level', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession',
                 'summons',
                 'maxSummons']
 
@@ -324,6 +328,7 @@ def queryData(n, start_num):
           id
           rarity
           generation
+          level
           mainClass
           subClass
           statBoost1
@@ -363,7 +368,7 @@ def queryData(n, start_num):
     df2 = pd.concat([df2, df['purchasePrice']], axis=1)
     df2 = pd.concat([df2, df['endedAt']], axis=1)
 
-    cols = ['id', 'rarity', 'generation', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession', 'summons',
+    cols = ['id', 'rarity', 'generation', 'level', 'mainClass', 'subClass', 'statBoost1', 'statBoost2', 'profession', 'summons',
             'maxSummons', 'purchasePrice', 'endedAt']
 
     df2 = df2.reindex(columns=cols)
